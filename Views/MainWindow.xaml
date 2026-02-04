@@ -1,0 +1,460 @@
+<Window x:Class="BlockchainNetworkAnalyzer.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Blockchain Network Analyzer Premium - Enterprise Edition" 
+        Height="900" Width="1600"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}">
+    
+    <Window.Resources>
+        <Style TargetType="TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header Bar -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" 
+                Padding="20,15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <TextBlock Text="🌐" 
+                              Foreground="White" 
+                              FontSize="32" 
+                              VerticalAlignment="Center" 
+                              Margin="0,0,15,0"/>
+                    <TextBlock Text="Blockchain Network Analyzer" 
+                              Foreground="White" 
+                              FontSize="24" 
+                              FontWeight="Bold" 
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <TextBlock Grid.Column="2" 
+                          Text="Premium Enterprise Edition v1.0" 
+                          Foreground="White" 
+                          FontSize="12" 
+                          VerticalAlignment="Center" 
+                          Opacity="0.9"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <TabControl Grid.Row="1" 
+                   Style="{StaticResource MaterialDesignFilledTabControl}">
+            
+            <!-- IP Configuration Tab -->
+            <TabItem Header="IP Configuration">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" 
+                                Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="IP Selection Mode" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                
+                                <ComboBox x:Name="IPSelectionModeCombo" 
+                                         materialDesign:HintAssist.Hint="Select IP Input Mode"
+                                         materialDesign:HintAssist.IsFloating="True"
+                                         Margin="0,0,0,20"
+                                         SelectionChanged="IPSelectionModeCombo_SelectionChanged">
+                                    <ComboBoxItem Content="Single IP Address" Tag="SingleIP"/>
+                                    <ComboBoxItem Content="IP Range (Start - End)" Tag="IPRange"/>
+                                    <ComboBoxItem Content="Random IP Generation" Tag="RandomIP"/>
+                                    <ComboBoxItem Content="Serial IP Generation" Tag="SerialIP"/>
+                                    <ComboBoxItem Content="Custom IP List" Tag="CustomIP"/>
+                                </ComboBox>
+
+                                <!-- Single IP -->
+                                <StackPanel x:Name="SingleIPPanel" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <TextBox materialDesign:HintAssist.Hint="IP Address"
+                                            materialDesign:HintAssist.IsFloating="True"
+                                            x:Name="SingleIPTxt"/>
+                                </StackPanel>
+
+                                <!-- IP Range -->
+                                <StackPanel x:Name="IPRangePanel" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="50"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" 
+                                                materialDesign:HintAssist.Hint="Start IP"
+                                                materialDesign:HintAssist.IsFloating="True"
+                                                x:Name="StartIPTxt" 
+                                                Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" 
+                                                  Text="to" 
+                                                  VerticalAlignment="Center" 
+                                                  HorizontalAlignment="Center" 
+                                                  Margin="10,0"/>
+                                        <TextBox Grid.Column="2" 
+                                                materialDesign:HintAssist.Hint="End IP"
+                                                materialDesign:HintAssist.IsFloating="True"
+                                                x:Name="EndIPTxt" 
+                                                Margin="10,0,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Random IP -->
+                                <StackPanel x:Name="RandomIPPanel" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <TextBox materialDesign:HintAssist.Hint="Number of Random IPs"
+                                            materialDesign:HintAssist.IsFloating="True"
+                                            x:Name="RandomIPCountTxt"
+                                            Text="100"/>
+                                </StackPanel>
+
+                                <!-- Serial IP -->
+                                <StackPanel x:Name="SerialIPPanel" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto" MinWidth="50"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" 
+                                                materialDesign:HintAssist.Hint="Base IP Address"
+                                                materialDesign:HintAssist.IsFloating="True"
+                                                x:Name="SerialBaseIPTxt" 
+                                                Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" 
+                                                  Text="Count" 
+                                                  VerticalAlignment="Center" 
+                                                  HorizontalAlignment="Center" 
+                                                  Margin="10,0"/>
+                                        <TextBox Grid.Column="2" 
+                                                materialDesign:HintAssist.Hint="Number of IPs"
+                                                materialDesign:HintAssist.IsFloating="True"
+                                                x:Name="SerialIPCountTxt" 
+                                                Text="100"
+                                                Margin="10,0,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Custom IP List -->
+                                <StackPanel x:Name="CustomIPPanel" Margin="0,0,0,15" Visibility="Collapsed">
+                                    <TextBox materialDesign:HintAssist.Hint="Enter IPs (one per line or comma-separated)"
+                                            materialDesign:HintAssist.IsFloating="True"
+                                            x:Name="CustomIPsTxt"
+                                            AcceptsReturn="True"
+                                            TextWrapping="Wrap"
+                                            Height="150"
+                                            VerticalScrollBarVisibility="Auto"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Port Configuration -->
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Port Configuration" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                
+                                <RadioButton x:Name="DefaultBlockchainPortsRadio" 
+                                           Content="Use Default Blockchain Ports" 
+                                           IsChecked="True"
+                                           Margin="0,0,0,10"
+                                           Checked="PortSelection_Changed"/>
+                                <RadioButton x:Name="CustomPortsRadio" 
+                                           Content="Custom Ports" 
+                                           Margin="0,0,0,10"
+                                           Checked="PortSelection_Changed"/>
+                                <RadioButton x:Name="AllPortsRadio" 
+                                           Content="Scan All Common Blockchain Ports" 
+                                           Margin="0,0,0,15"
+                                           Checked="PortSelection_Changed"/>
+                                
+                                <TextBox x:Name="CustomPortsTxt" 
+                                        materialDesign:HintAssist.Hint="Enter ports (comma-separated)"
+                                        materialDesign:HintAssist.IsFloating="True"
+                                        IsEnabled="False"
+                                        Text="8332,8333,8545,4444,3333,4028,7777,14433,14444"/>
+                                
+                                <Separator Margin="0,20"/>
+                                
+                                <!-- Scan Options -->
+                                <TextBlock Text="Scan Options" 
+                                          FontSize="16" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                
+                                <CheckBox x:Name="EnableFakeIPDetectionCheck" 
+                                         Content="Enable Fake IP Detection (99.99% of IP changers use fake IPs)" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableBlockchainDetectionCheck" 
+                                         Content="Enable Blockchain Detection" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnablePortScanningCheck" 
+                                         Content="Enable Port Scanning" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Grid.Column="0" 
+                                           x:Name="TimeoutSlider" 
+                                           Minimum="1000" 
+                                           Maximum="10000" 
+                                           Value="3000" 
+                                           TickFrequency="1000" 
+                                           IsSnapToTickEnabled="True"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,15,0"/>
+                                    <TextBlock Grid.Column="1" 
+                                              x:Name="TimeoutLabel" 
+                                              Text="Timeout: 3000ms"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+                                
+                                <Grid Margin="0,10,0,20">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Slider Grid.Column="0" 
+                                           x:Name="ConcurrentScansSlider" 
+                                           Minimum="1" 
+                                           Maximum="100" 
+                                           Value="50" 
+                                           TickFrequency="10" 
+                                           IsSnapToTickEnabled="True"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,15,0"/>
+                                    <TextBlock Grid.Column="1" 
+                                              x:Name="ConcurrentScansLabel" 
+                                              Text="Concurrent: 50"
+                                              VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <Button x:Name="StartScanBtn" 
+                                       Content="Start Network Scan" 
+                                       HorizontalAlignment="Right"
+                                       Padding="30,10"
+                                       Click="StartScanBtn_Click">
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Scan Results Tab -->
+            <TabItem Header="Scan Results">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Results Summary -->
+                    <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Total Scanned" FontSize="12" Opacity="0.7"/>
+                                <TextBlock x:Name="TotalScannedTxt" 
+                                          Text="0" 
+                                          FontSize="24" 
+                                          FontWeight="Bold"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Hosts Found" FontSize="12" Opacity="0.7"/>
+                                <TextBlock x:Name="HostsFoundTxt" 
+                                          Text="0" 
+                                          FontSize="24" 
+                                          FontWeight="Bold"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Blockchain Detected" FontSize="12" Opacity="0.7"/>
+                                <TextBlock x:Name="BlockchainDetectedTxt" 
+                                          Text="0" 
+                                          FontSize="24" 
+                                          FontWeight="Bold" 
+                                          Foreground="#4CAF50"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Fake IPs Detected" FontSize="12" Opacity="0.7"/>
+                                <TextBlock x:Name="FakeIPsDetectedTxt" 
+                                          Text="0" 
+                                          FontSize="24" 
+                                          FontWeight="Bold" 
+                                          Foreground="#F44336"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="4" 
+                                   x:Name="ExportResultsBtn" 
+                                   Content="Export Results" 
+                                   Click="ExportResultsBtn_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Results Grid -->
+                    <DataGrid Grid.Row="1" 
+                             x:Name="ResultsDataGrid" 
+                             AutoGenerateColumns="False" 
+                             IsReadOnly="True"
+                             SelectionMode="Extended"
+                             GridLinesVisibility="All"
+                             HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="IP Address" Binding="{Binding IPAddress}" Width="150"/>
+                            <DataGridTextColumn Header="Port" Binding="{Binding Port}" Width="80"/>
+                            <DataGridTextColumn Header="Status" Binding="{Binding PortStatus}" Width="100"/>
+                            <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="150"/>
+                            <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="120"/>
+                            <DataGridCheckBoxColumn Header="Blockchain" Binding="{Binding BlockchainDetected}" Width="100"/>
+                            <DataGridTextColumn Header="Blockchain Type" Binding="{Binding BlockchainType}" Width="150"/>
+                            <DataGridCheckBoxColumn Header="Fake IP" Binding="{Binding IsFakeIP}" Width="100"/>
+                            <DataGridTextColumn Header="Fake IP Reason" Binding="{Binding FakeIPReason}" Width="200"/>
+                            <DataGridTextColumn Header="Response Time" Binding="{Binding ResponseTime, StringFormat='{}{0} ms'}" Width="120"/>
+                            <DataGridTextColumn Header="ISP" Binding="{Binding ISP}" Width="150"/>
+                            <DataGridTextColumn Header="Geolocation" Binding="{Binding Geolocation}" Width="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- Statistics Tab -->
+            <TabItem Header="Statistics">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Border Grid.Row="0" Style="{StaticResource CardStyle}">
+                        <TextBlock Text="Scan Statistics and Analytics" 
+                                  FontSize="18" 
+                                  FontWeight="Bold"/>
+                    </Border>
+                    
+                    <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                        <TextBlock Text="Statistics and charts will be displayed here" 
+                                  FontSize="14" 
+                                  Opacity="0.7"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Settings Tab -->
+            <TabItem Header="Settings">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Application Settings" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,20"/>
+                                
+                                <TextBlock Text="Database Configuration" 
+                                          FontSize="16" 
+                                          FontWeight="SemiBold" 
+                                          Margin="0,0,0,10"/>
+                                <TextBox materialDesign:HintAssist.Hint="Database Path"
+                                        materialDesign:HintAssist.IsFloating="True"
+                                        x:Name="DatabasePathTxt"
+                                        Margin="0,0,0,20"/>
+                                
+                                <Separator Margin="0,0,0,20"/>
+                                
+                                <TextBlock Text="Advanced Options" 
+                                          FontSize="16" 
+                                          FontWeight="SemiBold" 
+                                          Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableAuditLoggingCheck" 
+                                         Content="Enable Audit Logging" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableAutoBackupCheck" 
+                                         Content="Enable Automatic Database Backup" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,20"/>
+                                
+                                <Button Content="Save Settings" 
+                                       HorizontalAlignment="Right"
+                                       Padding="30,10"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" 
+               Background="{DynamicResource MaterialDesignDivider}" 
+               Padding="10,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="StatusText" 
+                          Text="Ready" 
+                          VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ProgressBar x:Name="ScanProgressBar" 
+                                Width="200" 
+                                Height="20" 
+                                Margin="0,0,10,0" 
+                                Visibility="Collapsed"/>
+                    <TextBlock x:Name="ProgressText" 
+                              VerticalAlignment="Center" 
+                              Margin="0,0,10,0"
+                              Visibility="Collapsed"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
+

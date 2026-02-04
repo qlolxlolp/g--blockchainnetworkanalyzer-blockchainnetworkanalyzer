@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BlockchainNetworkAnalyzer": {
+      "commandName": "Project",
+      "jsWebView2Debugging": true,
+      "sqlDebugging": true,
+      "nativeDebugging": true
+    }
+  }
+}

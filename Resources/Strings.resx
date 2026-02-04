@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="http://schemas.microsoft.com/Xml-Msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" use="required" type="xsd:string" />
+              <xsd:attribute name="mimetype" use="required" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" use="required" type="xsd:string" />
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" use="required" type="xsd:string" />
+              <xsd:attribute name="mimetype" use="required" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="value" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainWindowTitle" xml:space="preserve">
+    <value>Blockchain Network Analyzer Premium - Enterprise Edition</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Blockchain Network Analyzer</value>
+  </data>
+  <data name="VersionText" xml:space="preserve">
+    <value>Premium Enterprise Edition v1.0</value>
+  </data>
+  <data name="IPConfigurationTab" xml:space="preserve">
+    <value>IP Configuration</value>
+  </data>
+  <data name="IPSelectionMode" xml:space="preserve">
+    <value>IP Selection Mode</value>
+  </data>
+  <data name="SelectIPInputMode" xml:space="preserve">
+    <value>Select IP Input Mode</value>
+  </data>
+  <data name="SingleIPAddress" xml:space="preserve">
+    <value>Single IP Address</value>
+  </data>
+  <data name="IPRange" xml:space="preserve">
+    <value>IP Range (Start - End)</value>
+  </data>
+  <data name="RandomIPGeneration" xml:space="preserve">
+    <value>Random IP Generation</value>
+  </data>
+  <data name="SerialIPGeneration" xml:space="preserve">
+    <value>Serial IP Generation</value>
+  </data>
+  <data name="CustomIPList" xml:space="preserve">
+    <value>Custom IP List</value>
+  </data>
+  <data name="IPAddress" xml:space="preserve">
+    <value>IP Address</value>
+  </data>
+  <data name="StartIP" xml:space="preserve">
+    <value>Start IP</value>
+  </data>
+  <data name="EndIP" xml:space="preserve">
+    <value>End IP</value>
+  </data>
+  <data name="NumberOfRandomIPs" xml:space="preserve">
+    <value>Number of Random IPs</value>
+  </data>
+  <data name="BaseIPAddress" xml:space="preserve">
+    <value>Base IP Address</value>
+  </data>
+  <data name="NumberOfIPs" xml:space="preserve">
+    <value>Number of IPs</value>
+  </data>
+  <data name="EnterIPs" xml:space="preserve">
+    <value>Enter IPs (one per line or comma-separated)</value>
+  </data>
+  <data name="PortConfiguration" xml:space="preserve">
+    <value>Port Configuration</value>
+  </data>
+  <data name="UseDefaultBlockchainPorts" xml:space="preserve">
+    <value>Use Default Blockchain Ports</value>
+  </data>
+  <data name="CustomPorts" xml:space="preserve">
+    <value>Custom Ports</value>
+  </data>
+  <data name="ScanAllCommonBlockchainPorts" xml:space="preserve">
+    <value>Scan All Common Blockchain Ports</value>
+  </data>
+  <data name="EnterPorts" xml:space="preserve">
+    <value>Enter ports (comma-separated)</value>
+  </data>
+  <data name="ScanOptions" xml:space="preserve">
+    <value>Scan Options</value>
+  </data>
+  <data name="EnableFakeIPDetection" xml:space="preserve">
+    <value>Enable Fake IP Detection (99.99% of IP changers use fake IPs)</value>
+  </data>
+  <data name="EnableBlockchainDetection" xml:space="preserve">
+    <value>Enable Blockchain Detection</value>
+  </data>
+  <data name="EnablePortScanning" xml:space="preserve">
+    <value>Enable Port Scanning</value>
+  </data>
+  <data name="Timeout" xml:space="preserve">
+    <value>Timeout</value>
+  </data>
+  <data name="Concurrent" xml:space="preserve">
+    <value>Concurrent</value>
+  </data>
+  <data name="StartNetworkScan" xml:space="preserve">
+    <value>Start Network Scan</value>
+  </data>
+  <data name="ScanResultsTab" xml:space="preserve">
+    <value>Scan Results</value>
+  </data>
+  <data name="TotalScanned" xml:space="preserve">
+    <value>Total Scanned</value>
+  </data>
+  <data name="HostsFound" xml:space="preserve">
+    <value>Hosts Found</value>
+  </data>
+  <data name="BlockchainDetected" xml:space="preserve">
+    <value>Blockchain Detected</value>
+  </data>
+  <data name="FakeIPsDetected" xml:space="preserve">
+    <value>Fake IPs Detected</value>
+  </data>
+  <data name="ExportResults" xml:space="preserve">
+    <value>Export Results</value>
+  </data>
+  <data name="StatisticsTab" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="ScanStatisticsAndAnalytics" xml:space="preserve">
+    <value>Scan Statistics and Analytics</value>
+  </data>
+  <data name="StatisticsPlaceholder" xml:space="preserve">
+    <value>Statistics and charts will be displayed here</value>
+  </data>
+  <data name="SettingsTab" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="ApplicationSettings" xml:space="preserve">
+    <value>Application Settings</value>
+  </data>
+  <data name="DatabaseConfiguration" xml:space="preserve">
+    <value>Database Configuration</value>
+  </data>
+  <data name="DatabasePath" xml:space="preserve">
+    <value>Database Path</value>
+  </data>
+  <data name="AdvancedOptions" xml:space="preserve">
+    <value>Advanced Options</value>
+  </data>
+  <data name="EnableAuditLogging" xml:space="preserve">
+    <value>Enable Audit Logging</value>
+  </data>
+  <data name="EnableAutomaticDatabaseBackup" xml:space="preserve">
+    <value>Enable Automatic Database Backup</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>Save Settings</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="ConfigurationError" xml:space="preserve">
+    <value>Configuration Error</value>
+  </data>
+  <data name="ConfigureCorrectly" xml:space="preserve">
+    <value>Please configure IP selection and ports correctly.</value>
+  </data>
+  <data name="InitializingScan" xml:space="preserve">
+    <value>Initializing scan...</value>
+  </data>
+  <data name="ScanCompleted" xml:space="preserve">
+    <value>Scan completed</value>
+  </data>
+  <data name="ScanFailed" xml:space="preserve">
+    <value>Scan failed</value>
+  </data>
+  <data name="ScanError" xml:space="preserve">
+    <value>Scan Error</value>
+  </data>
+  <data name="FailedToStartScan" xml:space="preserve">
+    <value>Failed to start scan</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>Scanning...</value>
+  </data>
+  <data name="NoResultsToExport" xml:space="preserve">
+    <value>No results to export.</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ResultsExportedSuccessfully" xml:space="preserve">
+    <value>Results exported successfully.</value>
+  </data>
+  <data name="ExportError" xml:space="preserve">
+    <value>Export Error</value>
+  </data>
+  <data name="FailedToExportResults" xml:space="preserve">
+    <value>Failed to export results</value>
+  </data>
+</root>

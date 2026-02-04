@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ============= STATUS COLOR CONVERTERS ============= -->
+    
+    <!-- Status to Color Converter -->
+    <Color x:Key="StatusOnlineColor">#4CAF50</Color>
+    <Color x:Key="StatusOfflineColor">#9E9E9E</Color>
+    <Color x:Key="StatusSuspiciousColor">#FF9800</Color>
+    <Color x:Key="StatusInfectedColor">#F44336</Color>
+    <Color x:Key="StatusUnknownColor">#2196F3</Color>
+
+    <!-- ============= GRADIENT DEFINITIONS ============= -->
+    
+    <!-- Modern Card Gradient -->
+    <LinearGradientBrush x:Key="CardGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F5F5F5" Offset="0.0"/>
+        <GradientStop Color="#FFFFFF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Button Hover Gradient -->
+    <LinearGradientBrush x:Key="ButtonHoverGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#00BCD4" Offset="0.0"/>
+        <GradientStop Color="#0097A7" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Success Gradient -->
+    <LinearGradientBrush x:Key="SuccessGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#4CAF50" Offset="0.0"/>
+        <GradientStop Color="#388E3C" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Error Gradient -->
+    <LinearGradientBrush x:Key="ErrorGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#F44336" Offset="0.0"/>
+        <GradientStop Color="#D32F2F" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Warning Gradient -->
+    <LinearGradientBrush x:Key="WarningGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#FF9800" Offset="0.0"/>
+        <GradientStop Color="#F57C00" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Info Gradient -->
+    <LinearGradientBrush x:Key="InfoGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2196F3" Offset="0.0"/>
+        <GradientStop Color="#1976D2" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- ============= DROP SHADOWS ============= -->
+    
+    <DropShadowEffect x:Key="StandardShadow" 
+                      BlurRadius="8" 
+                      Direction="315" 
+                      Opacity="0.15" 
+                      ShadowDepth="2"/>
+
+    <DropShadowEffect x:Key="ElevatedShadow" 
+                      BlurRadius="16" 
+                      Direction="315" 
+                      Opacity="0.25" 
+                      ShadowDepth="4"/>
+
+    <DropShadowEffect x:Key="HighElevatedShadow" 
+                      BlurRadius="24" 
+                      Direction="315" 
+                      Opacity="0.35" 
+                      ShadowDepth="8"/>
+
+    <!-- ============= SPACING VALUES ============= -->
+    
+    <Thickness x:Key="Spacing_XS">4</Thickness>
+    <Thickness x:Key="Spacing_S">8</Thickness>
+    <Thickness x:Key="Spacing_M">12</Thickness>
+    <Thickness x:Key="Spacing_L">16</Thickness>
+    <Thickness x:Key="Spacing_XL">20</Thickness>
+    <Thickness x:Key="Spacing_XXL">24</Thickness>
+
+    <!-- ============= FONT SIZES ============= -->
+    
+    <System:Double x:Key="FontSize_XS">11</System:Double>
+    <System:Double x:Key="FontSize_S">12</System:Double>
+    <System:Double x:Key="FontSize_M">14</System:Double>
+    <System:Double x:Key="FontSize_L">16</System:Double>
+    <System:Double x:Key="FontSize_XL">20</System:Double>
+    <System:Double x:Key="FontSize_XXL">24</System:Double>
+    <System:Double x:Key="FontSize_XXXL">32</System:Double>
+
+    <!-- ============= CORNER RADIUS VALUES ============= -->
+    
+    <CornerRadius x:Key="CornerRadius_S">4</CornerRadius>
+    <CornerRadius x:Key="CornerRadius_M">8</CornerRadius>
+    <CornerRadius x:Key="CornerRadius_L">12</CornerRadius>
+
+    <!-- ============= ANIMATIONS (STORYBOARDS) ============= -->
+    
+    <!-- Fade In Animation -->
+    <Storyboard x:Key="FadeInAnimation">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3" />
+    </Storyboard>
+
+    <!-- Fade Out Animation -->
+    <Storyboard x:Key="FadeOutAnimation">
+        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" Duration="0:0:0.3" />
+    </Storyboard>
+
+    <!-- Scale Up Animation -->
+    <Storyboard x:Key="ScaleUpAnimation">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" 
+                         From="0.9" To="1" Duration="0:0:0.2" />
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" 
+                         From="0.9" To="1" Duration="0:0:0.2" />
+    </Storyboard>
+
+    <!-- Slide In Left Animation -->
+    <Storyboard x:Key="SlideInLeftAnimation">
+        <ThicknessAnimation Storyboard.TargetProperty="Margin" From="-100,0,0,0" To="0,0,0,0" Duration="0:0:0.3" />
+    </Storyboard>
+
+    <!-- Slide In Right Animation -->
+    <Storyboard x:Key="SlideInRightAnimation">
+        <ThicknessAnimation Storyboard.TargetProperty="Margin" From="100,0,0,0" To="0,0,0,0" Duration="0:0:0.3" />
+    </Storyboard>
+
+</ResourceDictionary>

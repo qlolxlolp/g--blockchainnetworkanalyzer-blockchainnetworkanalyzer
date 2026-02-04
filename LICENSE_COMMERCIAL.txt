@@ -1,0 +1,59 @@
+
+BLOCKCHAIN NETWORK ANALYZER PREMIUM - ENTERPRISE EDITION
+COMMERCIAL LICENSE AGREEMENT
+=========================================================
+
+Copyright © 2024 Enterprise Solutions
+All Rights Reserved
+
+This software is licensed, not sold. By installing or using this software, 
+you agree to be bound by the terms of this license agreement.
+
+GRANT OF LICENSE
+----------------
+Enterprise Solutions grants you a non-exclusive, non-transferable license 
+to use Blockchain Network Analyzer Premium - Enterprise Edition subject to 
+the following terms:
+
+1. You may install and use the software on multiple computers within your 
+   organization.
+
+2. You may not reverse engineer, decompile, or disassemble the software.
+
+3. You may not rent, lease, or lend the software.
+
+4. You may not remove or alter any copyright notices.
+
+LIMITED WARRANTY
+----------------
+This software is provided "AS IS" without warranty of any kind, either 
+expressed or implied, including but not limited to the implied warranties 
+of merchantability and fitness for a particular purpose.
+
+SUPPORT
+-------
+Technical support is provided through official channels. Please contact
+Enterprise Solutions for support inquiries.
+
+UPDATES
+-------
+You are entitled to free updates for the duration of your license period.
+
+TERMINATION
+-----------
+This license is effective until terminated. Your rights under this license 
+will terminate automatically without notice if you fail to comply with any 
+term of this agreement.
+
+GOVERNING LAW
+-------------
+This agreement shall be governed by and construed in accordance with 
+applicable laws.
+
+=========================================================
+نسخه فارسی
+
+قرارداد مجوز نرم‌افزار تجاری
+بلاک‌چین نتورک آنالایزر پریمیوم - نسخه سازمانی
+
+تمامی حقوق محفوظ است © 2024

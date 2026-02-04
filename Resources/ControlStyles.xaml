@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <!-- ============= COLOR DEFINITIONS ============= -->
+    
+    <!-- Primary Colors - Teal Palette -->
+    <Color x:Key="PrimaryColor">#00BCD4</Color>
+    <Color x:Key="PrimaryDarkColor">#00796B</Color>
+    <Color x:Key="PrimaryLightColor">#26C6DA</Color>
+    
+    <!-- Secondary Colors -->
+    <Color x:Key="SecondaryColor">#FF4081</Color>
+    <Color x:Key="SecondaryDarkColor">#F50057</Color>
+    <Color x:Key="SecondaryLightColor">#FF80AB</Color>
+    
+    <!-- Accent Colors -->
+    <Color x:Key="AccentColor">#1976D2</Color>
+    <Color x:Key="AccentDarkColor">#1565C0</Color>
+    <Color x:Key="AccentLightColor">#64B5F6</Color>
+    
+    <!-- Status Colors -->
+    <Color x:Key="SuccessColor">#4CAF50</Color>
+    <Color x:Key="WarningColor">#FF9800</Color>
+    <Color x:Key="ErrorColor">#F44336</Color>
+    <Color x:Key="InfoColor">#2196F3</Color>
+    
+    <!-- Dark Theme Colors -->
+    <Color x:Key="BackgroundDarkColor">#121212</Color>
+    <Color x:Key="SurfaceDarkColor">#1E1E1E</Color>
+    <Color x:Key="SurfaceVariantDarkColor">#2C2C2C</Color>
+    <Color x:Key="TextDarkColor">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryDarkColor">#B0B0B0</Color>
+    
+    <!-- Light Theme Colors -->
+    <Color x:Key="BackgroundLightColor">#FAFAFA</Color>
+    <Color x:Key="SurfaceLightColor">#FFFFFF</Color>
+    <Color x:Key="TextLightColor">#212121</Color>
+    <Color x:Key="TextSecondaryLightColor">#757575</Color>
+
+    <!-- ============= BRUSHES ============= -->
+    
+    <!-- Primary Brushes -->
+    <SolidColorBrush x:Key="PrimaryColorBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource PrimaryDarkColor}"/>
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource PrimaryLightColor}"/>
+    
+    <!-- Secondary Brushes -->
+    <SolidColorBrush x:Key="SecondaryColorBrush" Color="{StaticResource SecondaryColor}"/>
+    <SolidColorBrush x:Key="SecondaryDarkBrush" Color="{StaticResource SecondaryDarkColor}"/>
+    
+    <!-- Status Brushes -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+    
+    <!-- Gradient Brushes for Headers -->
+    <LinearGradientBrush x:Key="HeaderGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource PrimaryColor}" Offset="0.0"/>
+        <GradientStop Color="{StaticResource AccentColor}" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- ============= BORDER STYLES ============= -->
+    
+    <Style x:Key="ModernBorderStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#EEEEEE"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <Style x:Key="CardBorderStyle" TargetType="Border" BasedOn="{StaticResource ModernBorderStyle}">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="8" Opacity="0.1" ShadowDepth="2"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============= BUTTON STYLES ============= -->
+    
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+        <Setter Property="Background" Value="{StaticResource PrimaryColorBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+        <Setter Property="Foreground" Value="{StaticResource AccentColorBrush}"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Padding" Value="20,10"/>
+    </Style>
+
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+        <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="20,10"/>
+    </Style>
+
+    <!-- ============= TEXT BOX STYLES ============= -->
+    
+    <Style x:Key="ModernTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryLightBrush}"/>
+    </Style>
+
+    <!-- ============= COMBO BOX STYLES ============= -->
+    
+    <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignComboBox}">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+    </Style>
+
+    <!-- ============= GROUPBOX STYLES ============= -->
+    
+    <Style x:Key="ModernGroupBoxStyle" TargetType="GroupBox">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#EEEEEE"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,8,0,8"/>
+    </Style>
+
+    <!-- ============= CHECKBOX STYLES ============= -->
+    
+    <Style x:Key="ModernCheckBoxStyle" TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+        <Setter Property="Margin" Value="0,8,0,8"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <!-- ============= DATA GRID STYLES ============= -->
+    
+    <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="#EEEEEE"/>
+        <Setter Property="RowHeight" Value="40"/>
+        <Setter Property="ColumnHeaderHeight" Value="44"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserDeleteRows" Value="False"/>
+    </Style>
+
+    <!-- Data Grid Column Header Style -->
+    <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ============= PROGRESS BAR STYLES ============= -->
+    
+    <Style x:Key="ModernProgressBarStyle" TargetType="ProgressBar">
+        <Setter Property="Height" Value="4"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryColorBrush}"/>
+        <Setter Property="Background" Value="#EEEEEE"/>
+        <Setter Property="Margin" Value="0,8,0,8"/>
+    </Style>
+
+    <!-- ============= SLIDER STYLES ============= -->
+    
+    <Style x:Key="ModernSliderStyle" TargetType="Slider" BasedOn="{StaticResource MaterialDesignSlider}">
+        <Setter Property="Margin" Value="0,16,0,16"/>
+        <Setter Property="Height" Value="24"/>
+    </Style>
+
+    <!-- ============= SEPARATOR STYLES ============= -->
+    
+    <Style x:Key="ModernSeparatorStyle" TargetType="Separator">
+        <Setter Property="Background" Value="#EEEEEE"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="0,16,0,16"/>
+    </Style>
+
+    <!-- ============= EXPANDER STYLES ============= -->
+    
+    <Style x:Key="ModernExpanderStyle" TargetType="Expander">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="#EEEEEE"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="0,4,0,4"/>
+    </Style>
+
+</ResourceDictionary>

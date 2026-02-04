@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="http://schemas.microsoft.com/Xml-Msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" use="required" type="xsd:string" />
+              <xsd:attribute name="mimetype" use="required" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" use="required" type="xsd:string" />
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" use="required" type="xsd:string" />
+              <xsd:attribute name="mimetype" use="required" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="value" use="required" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainWindowTitle" xml:space="preserve">
+    <value>تحلیلگر شبکه بلاک‌چین پیشرفته - نسخه سازمانی</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>تحلیلگر شبکه بلاک‌چین</value>
+  </data>
+  <data name="VersionText" xml:space="preserve">
+    <value>نسخه سازمانی پیشرفته v1.0</value>
+  </data>
+  <data name="IPConfigurationTab" xml:space="preserve">
+    <value>پیکربندی IP</value>
+  </data>
+  <data name="IPSelectionMode" xml:space="preserve">
+    <value>حالت انتخاب IP</value>
+  </data>
+  <data name="SelectIPInputMode" xml:space="preserve">
+    <value>حالت ورودی IP را انتخاب کنید</value>
+  </data>
+  <data name="SingleIPAddress" xml:space="preserve">
+    <value>آدرس IP واحد</value>
+  </data>
+  <data name="IPRange" xml:space="preserve">
+    <value>محدوده IP (شروع - پایان)</value>
+  </data>
+  <data name="RandomIPGeneration" xml:space="preserve">
+    <value>تولید IP تصادفی</value>
+  </data>
+  <data name="SerialIPGeneration" xml:space="preserve">
+    <value>تولید IP سریالی</value>
+  </data>
+  <data name="CustomIPList" xml:space="preserve">
+    <value>لیست IP سفارشی</value>
+  </data>
+  <data name="IPAddress" xml:space="preserve">
+    <value>آدرس IP</value>
+  </data>
+  <data name="StartIP" xml:space="preserve">
+    <value>IP شروع</value>
+  </data>
+  <data name="EndIP" xml:space="preserve">
+    <value>IP پایان</value>
+  </data>
+  <data name="NumberOfRandomIPs" xml:space="preserve">
+    <value>تعداد IP های تصادفی</value>
+  </data>
+  <data name="BaseIPAddress" xml:space="preserve">
+    <value>آدرس IP پایه</value>
+  </data>
+  <data name="NumberOfIPs" xml:space="preserve">
+    <value>تعداد IP ها</value>
+  </data>
+  <data name="EnterIPs" xml:space="preserve">
+    <value>IP ها را وارد کنید (هر کدام در یک خط یا جدا شده با کاما)</value>
+  </data>
+  <data name="PortConfiguration" xml:space="preserve">
+    <value>پیکربندی پورت</value>
+  </data>
+  <data name="UseDefaultBlockchainPorts" xml:space="preserve">
+    <value>استفاده از پورت های پیش‌فرض بلاک‌چین</value>
+  </data>
+  <data name="CustomPorts" xml:space="preserve">
+    <value>پورت های سفارشی</value>
+  </data>
+  <data name="ScanAllCommonBlockchainPorts" xml:space="preserve">
+    <value>اسکن تمام پورت های رایج بلاک‌چین</value>
+  </data>
+  <data name="EnterPorts" xml:space="preserve">
+    <value>پورت ها را وارد کنید (جدا شده با کاما)</value>
+  </data>
+  <data name="ScanOptions" xml:space="preserve">
+    <value>گزینه های اسکن</value>
+  </data>
+  <data name="EnableFakeIPDetection" xml:space="preserve">
+    <value>فعال کردن تشخیص IP جعلی (99.99% از تغییر دهنده های IP از IP جعلی استفاده می‌کنند)</value>
+  </data>
+  <data name="EnableBlockchainDetection" xml:space="preserve">
+    <value>فعال کردن تشخیص بلاک‌چین</value>
+  </data>
+  <data name="EnablePortScanning" xml:space="preserve">
+    <value>فعال کردن اسکن پورت</value>
+  </data>
+  <data name="Timeout" xml:space="preserve">
+    <value>زمان انتظار</value>
+  </data>
+  <data name="Concurrent" xml:space="preserve">
+    <value>همزمان</value>
+  </data>
+  <data name="StartNetworkScan" xml:space="preserve">
+    <value>شروع اسکن شبکه</value>
+  </data>
+  <data name="ScanResultsTab" xml:space="preserve">
+    <value>نتایج اسکن</value>
+  </data>
+  <data name="TotalScanned" xml:space="preserve">
+    <value>کل اسکن شده</value>
+  </data>
+  <data name="HostsFound" xml:space="preserve">
+    <value>هاست های یافت شده</value>
+  </data>
+  <data name="BlockchainDetected" xml:space="preserve">
+    <value>بلاک‌چین تشخیص داده شده</value>
+  </data>
+  <data name="FakeIPsDetected" xml:space="preserve">
+    <value>IP های جعلی تشخیص داده شده</value>
+  </data>
+  <data name="ExportResults" xml:space="preserve">
+    <value>صدور نتایج</value>
+  </data>
+  <data name="StatisticsTab" xml:space="preserve">
+    <value>آمار</value>
+  </data>
+  <data name="ScanStatisticsAndAnalytics" xml:space="preserve">
+    <value>آمار و تحلیل اسکن</value>
+  </data>
+  <data name="StatisticsPlaceholder" xml:space="preserve">
+    <value>نمودارها و آمار در اینجا نمایش داده خواهد شد</value>
+  </data>
+  <data name="SettingsTab" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="ApplicationSettings" xml:space="preserve">
+    <value>تنظیمات برنامه</value>
+  </data>
+  <data name="DatabaseConfiguration" xml:space="preserve">
+    <value>پیکربندی پایگاه داده</value>
+  </data>
+  <data name="DatabasePath" xml:space="preserve">
+    <value>مسیر پایگاه داده</value>
+  </data>
+  <data name="AdvancedOptions" xml:space="preserve">
+    <value>گزینه های پیشرفته</value>
+  </data>
+  <data name="EnableAuditLogging" xml:space="preserve">
+    <value>فعال کردن ثبت وقایع حسابرسی</value>
+  </data>
+  <data name="EnableAutomaticDatabaseBackup" xml:space="preserve">
+    <value>فعال کردن پشتیبان گیری خودکار پایگاه داده</value>
+  </data>
+  <data name="SaveSettings" xml:space="preserve">
+    <value>ذخیره تنظیمات</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>آماده</value>
+  </data>
+  <data name="ConfigurationError" xml:space="preserve">
+    <value>خطای پیکربندی</value>
+  </data>
+  <data name="ConfigureCorrectly" xml:space="preserve">
+    <value>لطفا انتخاب IP و پورت ها را به درستی پیکربندی کنید.</value>
+  </data>
+  <data name="InitializingScan" xml:space="preserve">
+    <value>در حال مقداردهی اولیه اسکن...</value>
+  </data>
+  <data name="ScanCompleted" xml:space="preserve">
+    <value>اسکن کامل شد</value>
+  </data>
+  <data name="ScanFailed" xml:space="preserve">
+    <value>اسکن شکست خورد</value>
+  </data>
+  <data name="ScanError" xml:space="preserve">
+    <value>خطای اسکن</value>
+  </data>
+  <data name="FailedToStartScan" xml:space="preserve">
+    <value>شکست در شروع اسکن</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>خطا</value>
+  </data>
+  <data name="Scanning" xml:space="preserve">
+    <value>در حال اسکن...</value>
+  </data>
+  <data name="NoResultsToExport" xml:space="preserve">
+    <value>هیچ نتیجه ای برای صدور وجود ندارد.</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>صدور</value>
+  </data>
+  <data name="ResultsExportedSuccessfully" xml:space="preserve">
+    <value>نتایج با موفقیت صادر شد.</value>
+  </data>
+  <data name="ExportError" xml:space="preserve">
+    <value>خطای صدور</value>
+  </data>
+  <data name="FailedToExportResults" xml:space="preserve">
+    <value>شکست در صدور نتایج</value>
+  </data>
+</root>

@@ -1,0 +1,107 @@
+{
+  "ApplicationSettings": {
+    "Version": "1.0.0",
+    "Name": "Blockchain Network Analyzer Premium",
+    "Edition": "Enterprise",
+    "DeveloperMode": false
+  },
+  "Localization": {
+    "DefaultLanguage": "fa",
+    "SupportedLanguages": ["fa", "en"],
+    "EnableAutoDetect": true
+  },
+  "Theme": {
+    "DefaultTheme": "DarkTeal",
+    "EnableDarkMode": true,
+    "AnimationsEnabled": true,
+    "TransitionDuration": 300
+  },
+  "NetworkScanning": {
+    "DefaultTimeout": 5000,
+    "ConcurrentThreads": 10,
+    "MaxConcurrentThreads": 50,
+    "RetryAttempts": 3,
+    "DefaultPorts": "8332,8333,30303,3333,4028,4444,5555,7777,14433,14444,14455",
+    "EnableServiceDetection": true,
+    "EnableVPNDetection": true,
+    "EnableGeographicAnalysis": true
+  },
+  "Database": {
+    "ConnectionString": "Data Source=Data\\blockchain_analyzer.db;",
+    "Provider": "SQLite",
+    "EnableEncryption": true,
+    "AutoBackup": true,
+    "BackupInterval": 7,
+    "MaxBackupFiles": 10,
+    "EnableAuditLog": true
+  },
+  "API": {
+    "ExternalServices": [
+      {
+        "Name": "IPInfo",
+        "Endpoint": "https://ipinfo.io",
+        "Timeout": 5000,
+        "RateLimit": 1000
+      },
+      {
+        "Name": "Shodan",
+        "Endpoint": "https://api.shodan.io",
+        "Timeout": 5000,
+        "RateLimit": 100
+      },
+      {
+        "Name": "MaxMind",
+        "Endpoint": "https://www.maxmind.com",
+        "Timeout": 5000,
+        "RateLimit": 500
+      }
+    ]
+  },
+  "UI": {
+    "RememberWindowSize": true,
+    "RememberWindowPosition": true,
+    "DefaultWindowWidth": 1600,
+    "DefaultWindowHeight": 900,
+    "DefaultWindowState": "Maximized",
+    "ShowSplashScreen": true,
+    "SplashScreenDuration": 2000
+  },
+  "Logging": {
+    "Level": "Information",
+    "EnableFileLogging": true,
+    "LogFilePath": "Logs\\",
+    "MaxLogFileSizeMB": 10,
+    "MaxLogFiles": 5,
+    "IncludeTimestamp": true,
+    "IncludeDebugInfo": false
+  },
+  "Performance": {
+    "EnableCaching": true,
+    "CacheDuration": 3600,
+    "EnableVirtualization": true,
+    "MaxItemsPerPage": 500,
+    "EnableParallelProcessing": true
+  },
+  "Security": {
+    "RequireAuthentication": false,
+    "EnableSSL": true,
+    "EncryptSensitiveData": true,
+    "AllowExport": true,
+    "ExportRequiresConfirmation": true,
+    "DataRetentionDays": 90
+  },
+  "Export": {
+    "DefaultFormat": "CSV",
+    "AllowedFormats": ["CSV", "JSON", "HTML", "PDF"],
+    "IncludeHeader": true,
+    "Delimiter": ",",
+    "Encoding": "UTF-8"
+  },
+  "Advanced": {
+    "EnableBetaFeatures": false,
+    "EnableDiagnostics": true,
+    "CollectUsageStatistics": false,
+    "CheckForUpdates": true,
+    "AutoUpdateCheck": true
+  }
+}
