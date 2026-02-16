@@ -1,0 +1,22 @@
+# Ilam Miner Detector - Python Dependencies
+
+# GUI Framework
+PyQt5==5.15.10
+PyQtWebEngine==5.15.6
+
+# Network Operations
+aiohttp==3.9.3
+asyncio==3.4.3
+
+# Geolocation and Mapping
+folium==0.15.1
+requests==2.31.0
+
+# Database
+# (Using built-in sqlite3 module)
+
+# Utilities
+python-dateutil==2.8.2
+
+# Optional: ICMP ping (if subprocess ping is not available)
+# pythonping==1.1.4  # Uncomment if needed on systems without ping command

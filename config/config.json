@@ -1,0 +1,32 @@
+{
+  "scan": {
+    "timeout_ms": 3000,
+    "max_concurrent": 50,
+    "retry_count": 2,
+    "ping_enabled": true,
+    "banner_grab_enabled": true,
+    "banner_timeout_ms": 2000
+  },
+  "geolocation": {
+    "primary_provider": "ip-api",
+    "fallback_provider": "ipinfo",
+    "api_key": null,
+    "rate_limit_per_minute": 45,
+    "cache_enabled": true,
+    "ilam_lat_min": 32.5,
+    "ilam_lat_max": 33.5,
+    "ilam_lon_min": 46.0,
+    "ilam_lon_max": 47.5
+  },
+  "database": {
+    "path": "data/ilam_miner.db",
+    "connection_pool_size": 5,
+    "enable_wal": true
+  },
+  "miner_ports": {
+    "stratum": [3333, 4444, 4028, 7777, 14433, 14444, 5555, 8888, 9999],
+    "bitcoin": [8332, 8333, 18332, 18333],
+    "ethereum": [8545, 8546, 30303, 30304],
+    "generic": [8080, 8081, 3000, 9090]
+  }
+}

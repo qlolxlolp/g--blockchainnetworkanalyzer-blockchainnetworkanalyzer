@@ -1,38 +1,63 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# PyQt5
+*.ui.py
 
-# testing
-/coverage
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# next.js
-/.next/
-/out/
+# Application data
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/logs/*.log
+reports/*.json
+reports/*.csv
+reports/*.html
 
-# production
-/build
+# Configuration (keep example)
+# config/config.json  # Uncomment to ignore user configs
 
-# misc
+# Temporary files
+*.tmp
+*.bak
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Distribution
+*.tar.gz
+*.zip
+*.exe
+*.msi
