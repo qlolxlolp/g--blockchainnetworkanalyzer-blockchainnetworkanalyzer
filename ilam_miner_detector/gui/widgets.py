@@ -2,288 +2,412 @@
 Custom PyQt5 widgets for Ilam Miner Detector GUI.
 """
 
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGroupBox,
-                             QLabel, QLineEdit, QPushButton, QSpinBox,
-                             QCheckBox, QTableWidget, QTableWidgetItem,
-                             QTextEdit, QHeaderView, QAbstractItemView)
+import logging
+from typing import List, Optional, Callable
+
+from PyQt5.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+    QPushButton, QSpinBox, QDoubleSpinBox, QCheckBox,
+    QGroupBox, QTableWidget, QTableWidgetItem, QHeaderView,
+    QTextEdit, QProgressBar, QComboBox, QFileDialog,
+    QMessageBox, QSplitter, QFrame
+)
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QColor
-import json
+from PyQt5.QtGui import QColor, QFont
+
+from ..config_manager import get_config_manager
+
+
+class LogWidget(QTextEdit):
+    """
+    Widget for displaying log messages with color coding.
+    """
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setReadOnly(True)
+        self.setMaximumBlockCount(1000)  # Limit history
+        
+        # Set monospace font
+        font = QFont("Consolas", 9)
+        font.setStyleHint(QFont.Monospace)
+        self.setFont(font)
+        
+        # Color scheme
+        self.colors = {
+            'DEBUG': '#808080',
+            'INFO': '#000000',
+            'WARNING': '#FF8C00',
+            'ERROR': '#FF0000',
+            'CRITICAL': '#8B0000'
+        }
+    
+    def append_log(self, message: str, level: str = 'INFO'):
+        """Append a log message with color coding."""
+        color = self.colors.get(level, '#000000')
+        timestamp = logging.time.strftime('%H:%M:%S') if hasattr(logging, 'time') else ''
+        
+        html = f'<span style="color: {color}">[{timestamp}] {message}</span>'
+        self.append(html)
+        
+        # Auto-scroll to bottom
+        scrollbar = self.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
+    
+    def clear_log(self):
+        """Clear all log messages."""
+        self.clear()
+
+
+class ResultsTableWidget(QTableWidget):
+    """
+    Table widget for displaying scan results.
+    """
+    
+    # Signal emitted when a row is double-clicked
+    row_selected = pyqtSignal(int)  # row index
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+        self.setColumnCount(7)
+        self.setHorizontalHeaderLabels([
+            'IP Address', 'Status', 'Ping', 'Open Ports', 
+            'Miner', 'Type', 'Confidence'
+        ])
+        
+        # Configure header
+        header = self.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # IP
+        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)  # Miner
+        header.setSectionResizeMode(6, QHeaderView.ResizeToContents)  # Confidence
+        
+        self.setSelectionBehavior(QTableWidget.SelectRows)
+        self.setSelectionMode(QTableWidget.SingleSelection)
+        self.setAlternatingRowColors(True)
+        
+        # Connect signals
+        self.cellDoubleClicked.connect(self._on_double_click)
+        
+        self._results = []
+    
+    def add_result(self, result):
+        """Add a scan result to the table."""
+        row = self.rowCount()
+        self.insertRow(row)
+        
+        # Store result data
+        self._results.append(result)
+        
+        # IP Address
+        self.setItem(row, 0, QTableWidgetItem(result.ip_address))
+        
+        # Status
+        status = "Online" if result.is_responsive else "Offline"
+        status_item = QTableWidgetItem(status)
+        status_item.setForeground(QColor('#008000') if result.is_responsive else QColor('#808080'))
+        self.setItem(row, 1, status_item)
+        
+        # Ping
+        ping_str = f"{result.ping_time_ms:.2f}ms" if result.ping_time_ms else "N/A"
+        self.setItem(row, 2, QTableWidgetItem(ping_str))
+        
+        # Open Ports
+        import json
+        try:
+            ports = json.loads(result.open_ports) if hasattr(result, 'open_ports') else []
+            if isinstance(ports, list):
+                ports_str = ', '.join(str(p) for p in ports[:3])
+                if len(ports) > 3:
+                    ports_str += f" (+{len(ports)-3})"
+            else:
+                ports_str = str(ports)
+        except:
+            ports_str = ""
+        self.setItem(row, 3, QTableWidgetItem(ports_str))
+        
+        # Miner Detected
+        miner_str = "Yes" if result.is_miner_detected else "No"
+        miner_item = QTableWidgetItem(miner_str)
+        if result.is_miner_detected:
+            miner_item.setForeground(QColor('#FF0000'))
+            miner_item.setFont(QFont("", weight=QFont.Bold))
+        self.setItem(row, 4, miner_item)
+        
+        # Type
+        miner_type = result.miner_type if result.is_miner_detected else ""
+        self.setItem(row, 5, QTableWidgetItem(miner_type))
+        
+        # Confidence
+        confidence = f"{result.confidence_score:.1f}%" if result.is_miner_detected else ""
+        conf_item = QTableWidgetItem(confidence)
+        if result.confidence_score >= 80:
+            conf_item.setForeground(QColor('#FF0000'))
+        elif result.confidence_score >= 50:
+            conf_item.setForeground(QColor('#FF8C00'))
+        self.setItem(row, 6, conf_item)
+    
+    def clear_results(self):
+        """Clear all results."""
+        self.setRowCount(0)
+        self._results = []
+    
+    def get_result(self, row: int):
+        """Get result data for a row."""
+        if 0 <= row < len(self._results):
+            return self._results[row]
+        return None
+    
+    def filter_miners_only(self, show_only: bool):
+        """Filter to show only miner detections."""
+        for row in range(self.rowCount()):
+            result = self._results[row] if row < len(self._results) else None
+            if result:
+                self.setRowHidden(row, show_only and not result.is_miner_detected)
+    
+    def _on_double_click(self, row: int, column: int):
+        """Handle double click on row."""
+        self.row_selected.emit(row)
 
 
 class ScanConfigWidget(QWidget):
-    """Widget for configuring scan parameters."""
+    """
+    Widget for configuring scan parameters.
+    """
     
-    scan_requested = pyqtSignal(dict)  # Emits config dictionary
+    # Signals
+    config_changed = pyqtSignal()
     
-    def __init__(self, default_ports=None):
-        super().__init__()
-        self.default_ports = default_ports or [3333, 4444, 8332, 8333, 8545]
-        self.init_ui()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.config = get_config_manager().get()
+        self._setup_ui()
     
-    def init_ui(self):
-        """Initialize UI components."""
-        layout = QVBoxLayout()
+    def _setup_ui(self):
+        layout = QVBoxLayout(self)
         
-        # Target configuration
-        target_group = QGroupBox("Target Configuration")
-        target_layout = QVBoxLayout()
+        # CIDR Range Group
+        cidr_group = QGroupBox("Target Range")
+        cidr_layout = QVBoxLayout(cidr_group)
         
-        target_layout.addWidget(QLabel("IP Range (CIDR, range, or comma-separated):"))
-        self.target_input = QLineEdit()
-        self.target_input.setPlaceholderText("e.g., 192.168.1.0/24 or 10.0.0.1-10.0.0.254")
-        target_layout.addWidget(self.target_input)
+        cidr_input_layout = QHBoxLayout()
+        cidr_input_layout.addWidget(QLabel("CIDR:"))
+        self.cidr_input = QLineEdit()
+        self.cidr_input.setPlaceholderText("e.g., 192.168.1.0/24")
+        cidr_input_layout.addWidget(self.cidr_input)
         
-        target_layout.addWidget(QLabel("Ports to scan (comma-separated):"))
-        self.ports_input = QLineEdit()
-        self.ports_input.setText(','.join(map(str, self.default_ports)))
-        target_layout.addWidget(self.ports_input)
+        self.validate_btn = QPushButton("Validate")
+        self.validate_btn.clicked.connect(self._validate_cidr)
+        cidr_input_layout.addWidget(self.validate_btn)
         
-        target_group.setLayout(target_layout)
-        layout.addWidget(target_group)
+        cidr_layout.addLayout(cidr_input_layout)
         
-        # Scan options
+        self.cidr_info = QLabel("")
+        self.cidr_info.setStyleSheet("color: #666; font-size: 11px;")
+        cidr_layout.addWidget(self.cidr_info)
+        
+        layout.addWidget(cidr_group)
+        
+        # Scan Options Group
         options_group = QGroupBox("Scan Options")
-        options_layout = QVBoxLayout()
+        options_layout = QVBoxLayout(options_group)
         
         # Timeout
         timeout_layout = QHBoxLayout()
-        timeout_layout.addWidget(QLabel("Timeout (ms):"))
-        self.timeout_spin = QSpinBox()
-        self.timeout_spin.setRange(500, 10000)
-        self.timeout_spin.setValue(3000)
-        self.timeout_spin.setSingleStep(500)
+        timeout_layout.addWidget(QLabel("Timeout (s):"))
+        self.timeout_spin = QDoubleSpinBox()
+        self.timeout_spin.setRange(0.5, 30.0)
+        self.timeout_spin.setValue(self.config.scan.timeout)
+        self.timeout_spin.setSingleStep(0.5)
         timeout_layout.addWidget(self.timeout_spin)
         timeout_layout.addStretch()
         options_layout.addLayout(timeout_layout)
         
-        # Max concurrent
-        concurrent_layout = QHBoxLayout()
-        concurrent_layout.addWidget(QLabel("Max Concurrent:"))
-        self.concurrent_spin = QSpinBox()
-        self.concurrent_spin.setRange(1, 200)
-        self.concurrent_spin.setValue(50)
-        self.concurrent_spin.setSingleStep(10)
-        concurrent_layout.addWidget(self.concurrent_spin)
-        concurrent_layout.addStretch()
-        options_layout.addLayout(concurrent_layout)
+        # Concurrency
+        concurrency_layout = QHBoxLayout()
+        concurrency_layout.addWidget(QLabel("Concurrency:"))
+        self.concurrency_spin = QSpinBox()
+        self.concurrency_spin.setRange(1, 500)
+        self.concurrency_spin.setValue(self.config.scan.concurrency)
+        concurrency_layout.addWidget(self.concurrency_spin)
+        concurrency_layout.addStretch()
+        options_layout.addLayout(concurrency_layout)
         
         # Checkboxes
-        self.ping_check = QCheckBox("Enable ICMP Ping")
-        self.ping_check.setChecked(True)
+        self.ping_check = QCheckBox("Enable Ping Check")
+        self.ping_check.setChecked(self.config.scan.enable_ping)
         options_layout.addWidget(self.ping_check)
         
         self.banner_check = QCheckBox("Enable Banner Grabbing")
-        self.banner_check.setChecked(True)
+        self.banner_check.setChecked(self.config.scan.enable_banner_grab)
         options_layout.addWidget(self.banner_check)
         
-        self.geolocation_check = QCheckBox("Enable Geolocation Lookup")
-        self.geolocation_check.setChecked(True)
-        options_layout.addWidget(self.geolocation_check)
-        
-        self.filter_ilam_check = QCheckBox("Filter for Ilam Region Only")
-        self.filter_ilam_check.setChecked(True)
-        options_layout.addWidget(self.filter_ilam_check)
-        
-        options_group.setLayout(options_layout)
         layout.addWidget(options_group)
         
-        # Start button
-        self.start_button = QPushButton("Start Scan")
-        self.start_button.clicked.connect(self.on_start_scan)
-        self.start_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                font-size: 14px;
-                font-weight: bold;
-                padding: 10px;
-                border: none;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-            QPushButton:disabled {
-                background-color: #cccccc;
-            }
-        """)
-        layout.addWidget(self.start_button)
+        # Port Selection Group
+        ports_group = QGroupBox("Ports to Scan")
+        ports_layout = QVBoxLayout(ports_group)
         
+        self.port_preset = QComboBox()
+        self.port_preset.addItems([
+            "Common Mining Ports",
+            "Stratum Only",
+            "Bitcoin Only",
+            "Ethereum Only",
+            "Custom"
+        ])
+        self.port_preset.currentTextChanged.connect(self._on_port_preset_changed)
+        ports_layout.addWidget(self.port_preset)
+        
+        self.ports_input = QLineEdit()
+        self.ports_input.setPlaceholderText("e.g., 3333,4444,8332")
+        ports_layout.addWidget(self.ports_input)
+        
+        self._on_port_preset_changed("Common Mining Ports")
+        
+        layout.addWidget(ports_group)
         layout.addStretch()
-        self.setLayout(layout)
     
-    def on_start_scan(self):
-        """Validate and emit scan configuration."""
-        target = self.target_input.text().strip()
-        if not target:
-            return
+    def get_cidr(self) -> str:
+        """Get entered CIDR range."""
+        return self.cidr_input.text().strip()
+    
+    def get_ports(self) -> List[int]:
+        """Get list of ports to scan."""
+        ports_text = self.ports_input.text()
+        ports = []
+        for part in ports_text.split(','):
+            part = part.strip()
+            if part.isdigit():
+                ports.append(int(part))
+        return ports if ports else self.config.miner_ports.all_ports
+    
+    def get_timeout(self) -> float:
+        """Get timeout value."""
+        return self.timeout_spin.value()
+    
+    def get_concurrency(self) -> int:
+        """Get concurrency value."""
+        return self.concurrency_spin.value()
+    
+    def is_ping_enabled(self) -> bool:
+        """Check if ping is enabled."""
+        return self.ping_check.isChecked()
+    
+    def is_banner_enabled(self) -> bool:
+        """Check if banner grabbing is enabled."""
+        return self.banner_check.isChecked()
+    
+    def _validate_cidr(self):
+        """Validate the CIDR input."""
+        from ..ip_manager import get_ip_manager
         
-        ports_text = self.ports_input.text().strip()
+        cidr = self.cidr_input.text().strip()
+        if not cidr:
+            self.cidr_info.setText("Please enter a CIDR range")
+            self.cidr_info.setStyleSheet("color: #FF0000;")
+            return False
+        
+        ip_manager = get_ip_manager()
+        
         try:
-            ports = [int(p.strip()) for p in ports_text.split(',') if p.strip()]
-        except ValueError:
-            return
-        
-        config = {
-            'target': target,
-            'ports': ports,
-            'timeout': self.timeout_spin.value(),
-            'max_concurrent': self.concurrent_spin.value(),
-            'enable_ping': self.ping_check.isChecked(),
-            'enable_banner': self.banner_check.isChecked(),
-            'enable_geolocation': self.geolocation_check.isChecked(),
-            'filter_ilam': self.filter_ilam_check.isChecked()
+            info = ip_manager.parse_cidr(cidr)
+            estimate_sec, estimate_str = ip_manager.estimate_scan_time(
+                cidr, 
+                self.timeout_spin.value(),
+                self.concurrency_spin.value()
+            )
+            
+            info_text = f"Hosts: {info.total_hosts:,} | Range: {info.first_ip} - {info.last_ip} | Est. time: {estimate_str}"
+            if info.is_private:
+                info_text += " | (Private Network)"
+            
+            self.cidr_info.setText(info_text)
+            self.cidr_info.setStyleSheet("color: #008000;")
+            return True
+            
+        except ValueError as e:
+            self.cidr_info.setText(f"Invalid CIDR: {e}")
+            self.cidr_info.setStyleSheet("color: #FF0000;")
+            return False
+    
+    def _on_port_preset_changed(self, preset: str):
+        """Handle port preset selection."""
+        presets = {
+            "Common Mining Ports": self.config.miner_ports.all_ports,
+            "Stratum Only": self.config.miner_ports.stratum_ports,
+            "Bitcoin Only": self.config.miner_ports.bitcoin_ports,
+            "Ethereum Only": self.config.miner_ports.ethereum_ports,
         }
         
-        self.scan_requested.emit(config)
-    
-    def set_scan_running(self, running: bool):
-        """Enable/disable controls during scan."""
-        self.start_button.setEnabled(not running)
-        self.target_input.setEnabled(not running)
-        self.ports_input.setEnabled(not running)
+        if preset in presets:
+            ports = presets[preset]
+            self.ports_input.setText(','.join(str(p) for p in ports))
+            self.ports_input.setEnabled(False)
+        else:
+            self.ports_input.setEnabled(True)
 
 
-class ResultsTableWidget(QTableWidget):
-    """Table widget for displaying scan results."""
+class ProgressWidget(QWidget):
+    """
+    Widget for displaying scan progress.
+    """
     
-    def __init__(self):
-        super().__init__()
-        self.init_ui()
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._setup_ui()
     
-    def init_ui(self):
-        """Initialize table structure."""
-        self.setColumnCount(7)
-        self.setHorizontalHeaderLabels([
-            'IP Address', 'Hostname', 'Open Ports', 'Miner Type',
-            'Location', 'ISP', 'Coordinates'
-        ])
+    def _setup_ui(self):
+        layout = QVBoxLayout(self)
         
-        # Configure table
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.setSortingEnabled(True)
+        # Progress bar
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(True)
+        layout.addWidget(self.progress_bar)
         
-        # Column widths
-        header = self.horizontalHeader()
-        header.setStretchLastSection(True)
-        for i in range(self.columnCount()):
-            header.setSectionResizeMode(i, QHeaderView.Interactive)
+        # Status labels
+        status_layout = QHBoxLayout()
         
-        self.setAlternatingRowColors(True)
+        self.status_label = QLabel("Ready")
+        status_layout.addWidget(self.status_label)
+        
+        status_layout.addStretch()
+        
+        self.stats_label = QLabel("")
+        status_layout.addWidget(self.stats_label)
+        
+        layout.addLayout(status_layout)
+        
+        # Separator
+        line = QFrame()
+        line.setFrameShape(QFrame.HLine)
+        line.setStyleSheet("color: #ccc;")
+        layout.addWidget(line)
     
-    def add_host(self, host_data: dict):
-        """
-        Add a discovered host to the table.
-        
-        Args:
-            host_data: Dictionary with host information
-        """
-        row = self.rowCount()
-        self.insertRow(row)
-        
-        # IP Address
-        ip_item = QTableWidgetItem(host_data.get('ip_address', ''))
-        self.setItem(row, 0, ip_item)
-        
-        # Hostname
-        hostname_item = QTableWidgetItem(host_data.get('hostname') or 'N/A')
-        self.setItem(row, 1, hostname_item)
-        
-        # Open Ports
-        ports = host_data.get('open_ports', [])
-        ports_text = ', '.join(map(str, ports))
-        ports_item = QTableWidgetItem(ports_text)
-        self.setItem(row, 2, ports_item)
-        
-        # Miner Type
-        miner_type = host_data.get('miner_type', '')
-        is_miner = host_data.get('is_miner', False)
-        miner_item = QTableWidgetItem(miner_type or 'N/A')
-        
-        if is_miner:
-            miner_item.setBackground(QColor(255, 200, 200))
-            miner_item.setForeground(QColor(150, 0, 0))
-        
-        self.setItem(row, 3, miner_item)
-        
-        # Location
-        city = host_data.get('city', '')
-        region = host_data.get('region', '')
-        country = host_data.get('country', '')
-        location = f"{city}, {region}, {country}" if city else 'N/A'
-        location_item = QTableWidgetItem(location)
-        self.setItem(row, 4, location_item)
-        
-        # ISP
-        isp_item = QTableWidgetItem(host_data.get('isp') or 'N/A')
-        self.setItem(row, 5, isp_item)
-        
-        # Coordinates
-        lat = host_data.get('latitude')
-        lon = host_data.get('longitude')
-        coords = f"{lat:.4f}, {lon:.4f}" if lat and lon else 'N/A'
-        coords_item = QTableWidgetItem(coords)
-        self.setItem(row, 6, coords_item)
-        
-        # Highlight miner rows
-        if is_miner:
-            for col in range(self.columnCount()):
-                item = self.item(row, col)
-                if item:
-                    item.setBackground(QColor(255, 235, 235))
+    def set_progress(self, current: int, total: int):
+        """Update progress bar."""
+        if total > 0:
+            percentage = int((current / total) * 100)
+            self.progress_bar.setValue(percentage)
+            self.progress_bar.setFormat(f"{current}/{total} ({percentage}%)")
+        else:
+            self.progress_bar.setValue(0)
+            self.progress_bar.setFormat("Ready")
     
-    def clear_results(self):
-        """Clear all results from table."""
-        self.setRowCount(0)
+    def set_status(self, status: str):
+        """Update status text."""
+        self.status_label.setText(status)
     
-    def get_all_hosts(self):
-        """Get all host data from table."""
-        hosts = []
-        for row in range(self.rowCount()):
-            host = {
-                'ip_address': self.item(row, 0).text(),
-                'hostname': self.item(row, 1).text(),
-                'open_ports': self.item(row, 2).text(),
-                'miner_type': self.item(row, 3).text(),
-                'location': self.item(row, 4).text(),
-                'isp': self.item(row, 5).text(),
-                'coordinates': self.item(row, 6).text()
-            }
-            hosts.append(host)
-        return hosts
-
-
-class LogWidget(QTextEdit):
-    """Widget for displaying log messages."""
+    def set_stats(self, responsive: int, miners: int):
+        """Update statistics display."""
+        self.stats_label.setText(f"Responsive: {responsive} | Miners: {miners}")
     
-    def __init__(self):
-        super().__init__()
-        self.setReadOnly(True)
-        self.setMaximumHeight(150)
-        self.setStyleSheet("""
-            QTextEdit {
-                background-color: #2b2b2b;
-                color: #00ff00;
-                font-family: 'Courier New', monospace;
-                font-size: 10px;
-            }
-        """)
-    
-    def log_info(self, message: str):
-        """Log info message."""
-        self.append(f"<span style='color: #00ff00;'>[INFO] {message}</span>")
-    
-    def log_warning(self, message: str):
-        """Log warning message."""
-        self.append(f"<span style='color: #ffaa00;'>[WARN] {message}</span>")
-    
-    def log_error(self, message: str):
-        """Log error message."""
-        self.append(f"<span style='color: #ff0000;'>[ERROR] {message}</span>")
-    
-    def log_success(self, message: str):
-        """Log success message."""
-        self.append(f"<span style='color: #00ffff;'>[SUCCESS] {message}</span>")
+    def reset(self):
+        """Reset to initial state."""
+        self.progress_bar.setValue(0)
+        self.progress_bar.setFormat("Ready")
+        self.status_label.setText("Ready")
+        self.stats_label.setText("")

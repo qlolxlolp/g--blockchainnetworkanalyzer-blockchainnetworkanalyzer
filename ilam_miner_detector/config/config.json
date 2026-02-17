@@ -1,0 +1,50 @@
+{
+  "scan": {
+    "timeout": 3,
+    "concurrency": 50,
+    "ping_timeout": 1.0,
+    "tcp_timeout": 3.0,
+    "max_retries": 2,
+    "retry_delay": 1.0,
+    "enable_ping": true,
+    "enable_banner_grab": true,
+    "banner_timeout": 5.0
+  },
+  "geolocation": {
+    "primary_provider": "ip-api.com",
+    "fallback_provider": "ipinfo.io",
+    "ipinfo_token": "",
+    "rate_limit_per_minute": 45,
+    "cache_enabled": true,
+    "cache_ttl_hours": 24,
+    "request_timeout": 10
+  },
+  "ilam_region": {
+    "min_latitude": 32.5,
+    "max_latitude": 33.5,
+    "min_longitude": 46.0,
+    "max_longitude": 47.5,
+    "province_name": "Ilam",
+    "country_code": "IR"
+  },
+  "miner_ports": {
+    "stratum_ports": [3333, 4444, 4028, 7777, 14433, 14444],
+    "bitcoin_ports": [8332, 8333],
+    "ethereum_ports": [8545, 30303],
+    "generic_ports": [8080, 8081]
+  },
+  "database": {
+    "db_path": "data/ilam_miner_detector.db",
+    "connection_timeout": 30,
+    "max_connections": 10
+  },
+  "reporting": {
+    "reports_dir": "reports",
+    "auto_export": true,
+    "export_formats": ["json", "html"],
+    "include_map": true,
+    "timestamp_format": "%Y%m%d_%H%M%S"
+  },
+  "log_level": "INFO",
+  "log_file": "data/ilam_miner_detector.log"
+}

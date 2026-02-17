@@ -1,205 +1,368 @@
 """
-Map generation utilities using Folium for visualizing miner locations.
+Map generation module for Ilam Miner Detector.
+Creates interactive Folium maps with detection markers and heatmaps.
 """
 
 import folium
-from folium.plugins import MarkerCluster, HeatMap
-from typing import List, Dict, Any
+from folium.plugins import HeatMap, MarkerCluster
+from typing import List, Dict, Optional, Tuple, Any
+from dataclasses import dataclass
+from pathlib import Path
+import json
 import logging
+
+from .geolocation import GeolocationResult
+from .database import HostRecord
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class MapMarker:
+    """A marker for the map."""
+    latitude: float
+    longitude: float
+    title: str
+    popup_content: str
+    color: str = "red"
+    icon: str = "warning"
 
 
 class MapGenerator:
-    """Generates interactive HTML maps with miner locations."""
+    """
+    Generates interactive Folium maps for scan results.
+    """
     
     # Ilam province center coordinates
     ILAM_CENTER = [33.0, 46.5]
-    ILAM_BOUNDS = [
-        [32.5, 46.0],  # Southwest corner
-        [33.5, 47.5]   # Northeast corner
-    ]
+    DEFAULT_ZOOM = 10
+    
+    # Marker colors by confidence
+    CONFIDENCE_COLORS = {
+        "high": "red",      # 80-100%
+        "medium": "orange", # 50-79%
+        "low": "yellow",    # 20-49%
+        "none": "blue"      # <20%
+    }
     
     def __init__(self):
-        """Initialize map generator."""
-        self.logger = logging.getLogger(__name__)
-    
-    def create_map(self, 
-                   hosts: List[Dict[str, Any]],
-                   center: List[float] = None,
-                   zoom_start: int = 10,
-                   show_heatmap: bool = True,
-                   show_clusters: bool = True) -> folium.Map:
+        self.map_instance: Optional[folium.Map] = None
+        
+    def create_map(self, center: Optional[List[float]] = None,
+                   zoom: int = DEFAULT_ZOOM) -> folium.Map:
         """
-        Create an interactive map with miner locations.
+        Create a new Folium map centered on Ilam province.
         
         Args:
-            hosts: List of host dictionaries with geolocation data
-            center: Map center coordinates [lat, lon]. Defaults to Ilam center
-            zoom_start: Initial zoom level
-            show_heatmap: Show heatmap layer
-            show_clusters: Use marker clustering
+            center: [lat, lon] center coordinates (default: Ilam center)
+            zoom: Initial zoom level
             
         Returns:
             Folium Map object
         """
-        if center is None:
-            center = self.ILAM_CENTER
+        center = center or self.ILAM_CENTER
         
-        # Create base map
-        m = folium.Map(
+        self.map_instance = folium.Map(
             location=center,
-            zoom_start=zoom_start,
-            tiles='OpenStreetMap'
+            zoom_start=zoom,
+            tiles='CartoDB positron'
         )
         
-        # Add Ilam province boundary rectangle
-        folium.Rectangle(
-            bounds=self.ILAM_BOUNDS,
-            color='red',
-            fill=False,
-            weight=2,
-            popup='Ilam Province Boundary (Approximate)',
-            tooltip='Ilam Province'
-        ).add_to(m)
+        # Add tile layers
+        folium.TileLayer(
+            'OpenStreetMap',
+            name='Street Map',
+            control=True
+        ).add_to(self.map_instance)
         
-        # Prepare data for markers and heatmap
-        marker_data = []
-        heatmap_data = []
-        
-        for host in hosts:
-            lat = host.get('latitude')
-            lon = host.get('longitude')
-            
-            if lat is None or lon is None:
-                continue
-            
-            ip = host.get('ip_address', 'Unknown')
-            city = host.get('city', 'Unknown')
-            region = host.get('region', 'Unknown')
-            miner_type = host.get('miner_type', 'Unknown')
-            open_ports = host.get('open_ports', '[]')
-            
-            marker_data.append({
-                'lat': lat,
-                'lon': lon,
-                'ip': ip,
-                'city': city,
-                'region': region,
-                'miner_type': miner_type,
-                'ports': open_ports
-            })
-            
-            heatmap_data.append([lat, lon])
-        
-        self.logger.info(f"Generating map with {len(marker_data)} markers")
-        
-        # Add markers
-        if show_clusters and len(marker_data) > 10:
-            marker_cluster = MarkerCluster().add_to(m)
-            parent = marker_cluster
-        else:
-            parent = m
-        
-        for data in marker_data:
-            # Color code by miner type
-            color = self._get_marker_color(data['miner_type'])
-            
-            # Create popup HTML
-            popup_html = f"""
-            <div style="font-family: Arial; width: 200px;">
-                <h4 style="margin: 0; color: {color};">🔍 Miner Detected</h4>
-                <hr style="margin: 5px 0;">
-                <b>IP:</b> {data['ip']}<br>
-                <b>Location:</b> {data['city']}, {data['region']}<br>
-                <b>Type:</b> {data['miner_type']}<br>
-                <b>Ports:</b> {data['ports']}<br>
-                <b>Coordinates:</b> {data['lat']:.4f}, {data['lon']:.4f}
-            </div>
-            """
-            
-            folium.Marker(
-                location=[data['lat'], data['lon']],
-                popup=folium.Popup(popup_html, max_width=300),
-                tooltip=f"{data['ip']} - {data['miner_type']}",
-                icon=folium.Icon(color=color, icon='info-sign')
-            ).add_to(parent)
-        
-        # Add heatmap layer
-        if show_heatmap and heatmap_data:
-            HeatMap(
-                heatmap_data,
-                name='Miner Density Heatmap',
-                radius=15,
-                blur=25,
-                max_zoom=13,
-                gradient={0.4: 'blue', 0.6: 'yellow', 0.8: 'orange', 1.0: 'red'}
-            ).add_to(m)
+        folium.TileLayer(
+            'CartoDB dark_matter',
+            name='Dark Mode',
+            control=True
+        ).add_to(self.map_instance)
         
         # Add layer control
-        folium.LayerControl().add_to(m)
+        folium.LayerControl().add_to(self.map_instance)
         
-        # Add legend
-        legend_html = '''
-        <div style="position: fixed; 
-                    bottom: 50px; right: 50px; width: 180px; height: auto; 
-                    background-color: white; border:2px solid grey; z-index:9999; 
-                    font-size:14px; padding: 10px">
-        <p style="margin: 0; font-weight: bold;">Miner Types</p>
-        <p style="margin: 5px 0;"><i class="fa fa-map-marker" style="color:red"></i> Stratum</p>
-        <p style="margin: 5px 0;"><i class="fa fa-map-marker" style="color:orange"></i> Bitcoin</p>
-        <p style="margin: 5px 0;"><i class="fa fa-map-marker" style="color:blue"></i> Ethereum</p>
-        <p style="margin: 5px 0;"><i class="fa fa-map-marker" style="color:purple"></i> Monero</p>
-        <p style="margin: 5px 0;"><i class="fa fa-map-marker" style="color:gray"></i> Unknown</p>
-        </div>
-        '''
-        m.get_root().html.add_child(folium.Element(legend_html))
+        return self.map_instance
+    
+    def add_ilam_boundary(self, map_obj: Optional[folium.Map] = None) -> folium.Map:
+        """
+        Add Ilam province boundary polygon to map.
+        
+        Args:
+            map_obj: Folium map (uses instance map if None)
+            
+        Returns:
+            Folium Map with boundary
+        """
+        m = map_obj or self.map_instance
+        if m is None:
+            m = self.create_map()
+        
+        # Approximate Ilam province boundary (simplified)
+        ilam_boundary = [
+            [32.5, 46.0],
+            [32.5, 47.5],
+            [33.5, 47.5],
+            [33.5, 46.0],
+            [32.5, 46.0]
+        ]
+        
+        folium.Polygon(
+            locations=ilam_boundary,
+            popup='Ilam Province',
+            color='blue',
+            weight=2,
+            fill=True,
+            fill_color='blue',
+            fill_opacity=0.1
+        ).add_to(m)
         
         return m
     
-    def _get_marker_color(self, miner_type: str) -> str:
+    def add_markers(self, markers: List[MapMarker],
+                   cluster: bool = True,
+                   map_obj: Optional[folium.Map] = None) -> folium.Map:
         """
-        Get marker color based on miner type.
+        Add markers to the map.
         
         Args:
-            miner_type: Type of miner
+            markers: List of MapMarker objects
+            cluster: Whether to use marker clustering
+            map_obj: Folium map (uses instance map if None)
             
         Returns:
-            Color name for Folium marker
+            Folium Map with markers
         """
-        colors = {
-            'stratum': 'red',
-            'bitcoin': 'orange',
-            'ethereum': 'blue',
-            'monero': 'purple',
-        }
+        m = map_obj or self.map_instance
+        if m is None:
+            m = self.create_map()
         
-        return colors.get(miner_type.lower() if miner_type else '', 'gray')
+        if cluster:
+            marker_cluster = MarkerCluster(name='Detections').add_to(m)
+            target = marker_cluster
+        else:
+            target = m
+        
+        for marker in markers:
+            folium.Marker(
+                location=[marker.latitude, marker.longitude],
+                popup=folium.Popup(marker.popup_content, max_width=300),
+                tooltip=marker.title,
+                icon=folium.Icon(color=marker.color, icon=marker.icon, prefix='fa')
+            ).add_to(target)
+        
+        return m
     
-    def save_map(self, m: folium.Map, filepath: str):
+    def add_heatmap(self, points: List[Tuple[float, float]],
+                   map_obj: Optional[folium.Map] = None) -> folium.Map:
+        """
+        Add a heatmap layer to the map.
+        
+        Args:
+            points: List of (lat, lon) tuples
+            map_obj: Folium map (uses instance map if None)
+            
+        Returns:
+            Folium Map with heatmap
+        """
+        m = map_obj or self.map_instance
+        if m is None:
+            m = self.create_map()
+        
+        if points:
+            HeatMap(
+                data=points,
+                name='Detection Heatmap',
+                min_opacity=0.3,
+                radius=15,
+                blur=25,
+                max_zoom=10
+            ).add_to(m)
+        
+        return m
+    
+    def add_scan_results(self, results: List[Dict[str, Any]],
+                        include_heatmap: bool = True,
+                        map_obj: Optional[folium.Map] = None) -> folium.Map:
+        """
+        Add scan results to map with geolocation data.
+        
+        Args:
+            results: List of dicts with ip, lat, lon, confidence, etc.
+            include_heatmap: Whether to add heatmap layer
+            map_obj: Folium map (uses instance map if None)
+            
+        Returns:
+            Folium Map with results
+        """
+        m = map_obj or self.map_instance
+        if m is None:
+            m = self.create_map()
+        
+        markers = []
+        heatmap_points = []
+        
+        for result in results:
+            lat = result.get('latitude', 0)
+            lon = result.get('longitude', 0)
+            
+            if lat == 0 and lon == 0:
+                continue
+            
+            confidence = result.get('confidence_score', 0)
+            color = self._get_color_by_confidence(confidence)
+            
+            # Create popup content
+            popup = self._create_popup_content(result)
+            
+            marker = MapMarker(
+                latitude=lat,
+                longitude=lon,
+                title=f"{result.get('ip_address', 'Unknown')} ({confidence:.0f}%)",
+                popup_content=popup,
+                color=color,
+                icon='exclamation-triangle' if confidence >= 50 else 'info-circle'
+            )
+            markers.append(marker)
+            heatmap_points.append([lat, lon])
+        
+        # Add markers
+        self.add_markers(markers, cluster=True, map_obj=m)
+        
+        # Add heatmap if requested
+        if include_heatmap and heatmap_points:
+            self.add_heatmap(heatmap_points, map_obj=m)
+        
+        return m
+    
+    def save_map(self, output_path: str, map_obj: Optional[folium.Map] = None) -> str:
         """
         Save map to HTML file.
         
         Args:
-            m: Folium Map object
-            filepath: Output file path
-        """
-        m.save(filepath)
-        self.logger.info(f"Map saved to {filepath}")
-    
-    def generate_and_save(self, 
-                         hosts: List[Dict[str, Any]], 
-                         filepath: str,
-                         **kwargs) -> str:
-        """
-        Generate and save map in one call.
-        
-        Args:
-            hosts: List of host dictionaries
-            filepath: Output file path
-            **kwargs: Additional arguments for create_map
+            output_path: Path to save HTML file
+            map_obj: Folium map (uses instance map if None)
             
         Returns:
-            Path to saved map file
+            Path to saved file
         """
-        m = self.create_map(hosts, **kwargs)
-        self.save_map(m, filepath)
-        return filepath
+        m = map_obj or self.map_instance
+        if m is None:
+            m = self.create_map()
+        
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        m.save(output_path)
+        logger.info(f"Map saved to {output_path}")
+        return output_path
+    
+    def _get_color_by_confidence(self, confidence: float) -> str:
+        """Get marker color based on confidence score."""
+        if confidence >= 80:
+            return self.CONFIDENCE_COLORS["high"]
+        elif confidence >= 50:
+            return self.CONFIDENCE_COLORS["medium"]
+        elif confidence >= 20:
+            return self.CONFIDENCE_COLORS["low"]
+        return self.CONFIDENCE_COLORS["none"]
+    
+    def _create_popup_content(self, result: Dict[str, Any]) -> str:
+        """Create HTML popup content for a result."""
+        ip = result.get('ip_address', 'Unknown')
+        confidence = result.get('confidence_score', 0)
+        miner_type = result.get('miner_type', 'Unknown')
+        city = result.get('city', 'Unknown')
+        region = result.get('region', 'Unknown')
+        country = result.get('country', 'Unknown')
+        isp = result.get('isp', 'Unknown')
+        open_ports = result.get('open_ports', [])
+        
+        ports_str = ', '.join(str(p) for p in open_ports[:5])
+        if len(open_ports) > 5:
+            ports_str += f" (+{len(open_ports) - 5} more)"
+        
+        html = f"""
+        <div style="min-width: 200px;">
+            <h4 style="margin: 0 0 10px 0; color: #d32f2f;">
+                <i class="fa fa-exclamation-circle"></i> Potential Miner Detected
+            </h4>
+            <table style="width: 100%; font-size: 12px;">
+                <tr><td><b>IP:</b></td><td>{ip}</td></tr>
+                <tr><td><b>Confidence:</b></td><td><span style="color: {'red' if confidence >= 80 else 'orange' if confidence >= 50 else 'yellow'}">{confidence:.1f}%</span></td></tr>
+                <tr><td><b>Type:</b></td><td>{miner_type}</td></tr>
+                <tr><td><b>Location:</b></td><td>{city}, {region}, {country}</td></tr>
+                <tr><td><b>ISP:</b></td><td>{isp}</td></tr>
+                <tr><td><b>Open Ports:</b></td><td>{ports_str or 'None'}</td></tr>
+            </table>
+        </div>
+        """
+        return html
+    
+    def create_summary_map(self, scan_results: List[Dict],
+                          output_path: str,
+                          title: str = "Ilam Miner Detection Results") -> str:
+        """
+        Create a complete summary map with all features.
+        
+        Args:
+            scan_results: List of scan result dictionaries
+            output_path: Path to save HTML
+            title: Map title
+            
+        Returns:
+            Path to saved map
+        """
+        # Create base map
+        m = self.create_map()
+        
+        # Add title
+        title_html = f'''
+            <div style="position: fixed; 
+                        top: 10px; left: 50px; width: 400px;
+                        background-color: white; 
+                        border: 2px solid #333;
+                        border-radius: 5px;
+                        padding: 10px;
+                        z-index: 9999;
+                        font-family: Arial;">
+                <h3 style="margin: 0; color: #333;">{title}</h3>
+                <p style="margin: 5px 0 0 0; font-size: 12px;">
+                    Total Detections: {len(scan_results)}
+                </p>
+            </div>
+        '''
+        m.get_root().html.add_child(folium.Element(title_html))
+        
+        # Add Ilam boundary
+        self.add_ilam_boundary(m)
+        
+        # Add scan results
+        self.add_scan_results(scan_results, include_heatmap=True, map_obj=m)
+        
+        # Add legend
+        legend_html = '''
+        <div style="position: fixed; 
+                    bottom: 50px; right: 50px; 
+                    background-color: white; 
+                    border: 2px solid #333;
+                    border-radius: 5px;
+                    padding: 10px;
+                    z-index: 9999;
+                    font-family: Arial;
+                    font-size: 12px;">
+            <h4 style="margin: 0 0 10px 0;">Confidence Levels</h4>
+            <div><span style="background-color: red; padding: 2px 8px;">&nbsp;</span> High (80-100%)</div>
+            <div><span style="background-color: orange; padding: 2px 8px;">&nbsp;</span> Medium (50-79%)</div>
+            <div><span style="background-color: yellow; padding: 2px 8px;">&nbsp;</span> Low (20-49%)</div>
+            <div><span style="background-color: blue; padding: 2px 8px;">&nbsp;</span> None (&lt;20%)</div>
+        </div>
+        '''
+        m.get_root().html.add_child(folium.Element(legend_html))
+        
+        return self.save_map(output_path, m)
+
+
+def get_map_generator() -> MapGenerator:
+    """Get map generator instance."""
+    return MapGenerator()

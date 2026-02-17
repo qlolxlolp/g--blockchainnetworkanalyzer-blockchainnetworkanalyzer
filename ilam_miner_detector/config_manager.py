@@ -1,173 +1,234 @@
 """
 Configuration management for Ilam Miner Detector.
-Handles loading, validation, and access to configuration settings.
+Provides JSON-based configuration with schema validation.
 """
 
 import json
 import os
+from dataclasses import dataclass, field, asdict
+from typing import Dict, List, Optional, Any
 from pathlib import Path
-from typing import Dict, Any, Optional
-from dataclasses import dataclass, asdict
 
 
 @dataclass
 class ScanConfig:
-    """Scan operation configuration."""
-    timeout_ms: int = 3000
-    max_concurrent: int = 50
-    retry_count: int = 2
-    ping_enabled: bool = True
-    banner_grab_enabled: bool = True
-    banner_timeout_ms: int = 2000
+    """Scanning configuration settings."""
+    timeout: int = 3
+    concurrency: int = 50
+    ping_timeout: float = 1.0
+    tcp_timeout: float = 3.0
+    max_retries: int = 2
+    retry_delay: float = 1.0
+    enable_ping: bool = True
+    enable_banner_grab: bool = True
+    banner_timeout: float = 5.0
 
 
 @dataclass
 class GeolocationConfig:
     """Geolocation service configuration."""
-    primary_provider: str = "ip-api"
-    fallback_provider: Optional[str] = "ipinfo"
-    api_key: Optional[str] = None
+    primary_provider: str = "ip-api.com"
+    fallback_provider: str = "ipinfo.io"
+    ipinfo_token: str = ""
     rate_limit_per_minute: int = 45
     cache_enabled: bool = True
-    ilam_lat_min: float = 32.5
-    ilam_lat_max: float = 33.5
-    ilam_lon_min: float = 46.0
-    ilam_lon_max: float = 47.5
+    cache_ttl_hours: int = 24
+    request_timeout: int = 10
+
+
+@dataclass
+class IlamRegionConfig:
+    """Ilam province region boundaries for filtering."""
+    min_latitude: float = 32.5
+    max_latitude: float = 33.5
+    min_longitude: float = 46.0
+    max_longitude: float = 47.5
+    province_name: str = "Ilam"
+    country_code: str = "IR"
+
+
+@dataclass
+class MinerPortsConfig:
+    """Common cryptocurrency mining ports to scan."""
+    stratum_ports: List[int] = field(default_factory=lambda: [3333, 4444, 4028, 7777, 14433, 14444])
+    bitcoin_ports: List[int] = field(default_factory=lambda: [8332, 8333])
+    ethereum_ports: List[int] = field(default_factory=lambda: [8545, 30303])
+    generic_ports: List[int] = field(default_factory=lambda: [8080, 8081])
+    
+    @property
+    def all_ports(self) -> List[int]:
+        """Get all ports combined and sorted."""
+        all_p = set(self.stratum_ports + self.bitcoin_ports + 
+                   self.ethereum_ports + self.generic_ports)
+        return sorted(list(all_p))
 
 
 @dataclass
 class DatabaseConfig:
     """Database configuration."""
-    path: str = "data/ilam_miner.db"
-    connection_pool_size: int = 5
-    enable_wal: bool = True
+    db_path: str = "data/ilam_miner_detector.db"
+    connection_timeout: int = 30
+    max_connections: int = 10
 
 
 @dataclass
-class MinerPorts:
-    """Known cryptocurrency miner ports."""
-    stratum: list = None
-    bitcoin: list = None
-    ethereum: list = None
-    generic: list = None
-    
-    def __post_init__(self):
-        if self.stratum is None:
-            self.stratum = [3333, 4444, 4028, 7777, 14433, 14444, 5555, 8888, 9999]
-        if self.bitcoin is None:
-            self.bitcoin = [8332, 8333, 18332, 18333]
-        if self.ethereum is None:
-            self.ethereum = [8545, 8546, 30303, 30304]
-        if self.generic is None:
-            self.generic = [8080, 8081, 3000, 9090]
-    
-    def all_ports(self) -> list:
-        """Return all configured miner ports."""
-        return sorted(set(self.stratum + self.bitcoin + self.ethereum + self.generic))
+class ReportingConfig:
+    """Reporting and export configuration."""
+    reports_dir: str = "reports"
+    auto_export: bool = True
+    export_formats: List[str] = field(default_factory=lambda: ["json", "html"])
+    include_map: bool = True
+    timestamp_format: str = "%Y%m%d_%H%M%S"
+
+
+@dataclass
+class AppConfig:
+    """Main application configuration container."""
+    scan: ScanConfig = field(default_factory=ScanConfig)
+    geolocation: GeolocationConfig = field(default_factory=GeolocationConfig)
+    ilam_region: IlamRegionConfig = field(default_factory=IlamRegionConfig)
+    miner_ports: MinerPortsConfig = field(default_factory=MinerPortsConfig)
+    database: DatabaseConfig = field(default_factory=DatabaseConfig)
+    reporting: ReportingConfig = field(default_factory=ReportingConfig)
+    log_level: str = "INFO"
+    log_file: str = "data/ilam_miner_detector.log"
 
 
 class ConfigManager:
-    """Manages application configuration from JSON files."""
+    """
+    Manages application configuration with load/save capabilities.
+    """
     
     DEFAULT_CONFIG = {
         "scan": {
-            "timeout_ms": 3000,
-            "max_concurrent": 50,
-            "retry_count": 2,
-            "ping_enabled": True,
-            "banner_grab_enabled": True,
-            "banner_timeout_ms": 2000
+            "timeout": 3,
+            "concurrency": 50,
+            "ping_timeout": 1.0,
+            "tcp_timeout": 3.0,
+            "max_retries": 2,
+            "retry_delay": 1.0,
+            "enable_ping": True,
+            "enable_banner_grab": True,
+            "banner_timeout": 5.0
         },
         "geolocation": {
-            "primary_provider": "ip-api",
-            "fallback_provider": "ipinfo",
-            "api_key": None,
+            "primary_provider": "ip-api.com",
+            "fallback_provider": "ipinfo.io",
+            "ipinfo_token": "",
             "rate_limit_per_minute": 45,
             "cache_enabled": True,
-            "ilam_lat_min": 32.5,
-            "ilam_lat_max": 33.5,
-            "ilam_lon_min": 46.0,
-            "ilam_lon_max": 47.5
+            "cache_ttl_hours": 24,
+            "request_timeout": 10
         },
-        "database": {
-            "path": "data/ilam_miner.db",
-            "connection_pool_size": 5,
-            "enable_wal": True
+        "ilam_region": {
+            "min_latitude": 32.5,
+            "max_latitude": 33.5,
+            "min_longitude": 46.0,
+            "max_longitude": 47.5,
+            "province_name": "Ilam",
+            "country_code": "IR"
         },
         "miner_ports": {
-            "stratum": [3333, 4444, 4028, 7777, 14433, 14444, 5555, 8888, 9999],
-            "bitcoin": [8332, 8333, 18332, 18333],
-            "ethereum": [8545, 8546, 30303, 30304],
-            "generic": [8080, 8081, 3000, 9090]
-        }
+            "stratum_ports": [3333, 4444, 4028, 7777, 14433, 14444],
+            "bitcoin_ports": [8332, 8333],
+            "ethereum_ports": [8545, 30303],
+            "generic_ports": [8080, 8081]
+        },
+        "database": {
+            "db_path": "data/ilam_miner_detector.db",
+            "connection_timeout": 30,
+            "max_connections": 10
+        },
+        "reporting": {
+            "reports_dir": "reports",
+            "auto_export": True,
+            "export_formats": ["json", "html"],
+            "include_map": True,
+            "timestamp_format": "%Y%m%d_%H%M%S"
+        },
+        "log_level": "INFO",
+        "log_file": "data/ilam_miner_detector.log"
     }
     
-    def __init__(self, config_path: Optional[str] = None):
-        """
-        Initialize configuration manager.
+    def __init__(self, config_path: str = "config/config.json"):
+        self.config_path = Path(config_path)
+        self._config: Optional[AppConfig] = None
         
-        Args:
-            config_path: Path to configuration JSON file. If None, uses default config.
-        """
-        self.config_path = config_path
-        self._config_data = self._load_config()
-        
-        self.scan = ScanConfig(**self._config_data.get("scan", {}))
-        self.geolocation = GeolocationConfig(**self._config_data.get("geolocation", {}))
-        self.database = DatabaseConfig(**self._config_data.get("database", {}))
-        self.miner_ports = MinerPorts(**self._config_data.get("miner_ports", {}))
-    
-    def _load_config(self) -> Dict[str, Any]:
-        """Load configuration from file or use defaults."""
-        if self.config_path and os.path.exists(self.config_path):
+    def load(self) -> AppConfig:
+        """Load configuration from file or create default."""
+        if self._config is not None:
+            return self._config
+            
+        if self.config_path.exists():
             try:
-                with open(self.config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
-                    # Merge with defaults to ensure all keys exist
-                    return self._merge_configs(self.DEFAULT_CONFIG, config)
-            except Exception as e:
-                print(f"Warning: Failed to load config from {self.config_path}: {e}")
-                print("Using default configuration")
-        
-        return self.DEFAULT_CONFIG.copy()
+                with open(self.config_path, 'r') as f:
+                    data = json.load(f)
+                self._config = self._dict_to_config(data)
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                print(f"Warning: Failed to load config: {e}. Using defaults.")
+                self._config = self._create_default_config()
+                self.save()
+        else:
+            self._config = self._create_default_config()
+            self.save()
+            
+        return self._config
     
-    def _merge_configs(self, default: Dict, override: Dict) -> Dict:
-        """Recursively merge override config into default config."""
-        result = default.copy()
-        for key, value in override.items():
-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-                result[key] = self._merge_configs(result[key], value)
-            else:
-                result[key] = value
-        return result
+    def save(self) -> None:
+        """Save current configuration to file."""
+        if self._config is None:
+            self._config = self._create_default_config()
+            
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        data = self._config_to_dict(self._config)
+        with open(self.config_path, 'w') as f:
+            json.dump(data, f, indent=2)
     
-    def save(self, path: Optional[str] = None):
-        """
-        Save current configuration to JSON file.
-        
-        Args:
-            path: Target file path. If None, uses original config_path.
-        """
-        target_path = path or self.config_path
-        if not target_path:
-            raise ValueError("No config path specified for saving")
-        
-        config_data = {
-            "scan": asdict(self.scan),
-            "geolocation": asdict(self.geolocation),
-            "database": asdict(self.database),
-            "miner_ports": {
-                "stratum": self.miner_ports.stratum,
-                "bitcoin": self.miner_ports.bitcoin,
-                "ethereum": self.miner_ports.ethereum,
-                "generic": self.miner_ports.generic
-            }
+    def get(self) -> AppConfig:
+        """Get current configuration."""
+        if self._config is None:
+            return self.load()
+        return self._config
+    
+    def _create_default_config(self) -> AppConfig:
+        """Create default configuration."""
+        return AppConfig()
+    
+    def _dict_to_config(self, data: Dict[str, Any]) -> AppConfig:
+        """Convert dictionary to AppConfig."""
+        return AppConfig(
+            scan=ScanConfig(**data.get("scan", {})),
+            geolocation=GeolocationConfig(**data.get("geolocation", {})),
+            ilam_region=IlamRegionConfig(**data.get("ilam_region", {})),
+            miner_ports=MinerPortsConfig(**data.get("miner_ports", {})),
+            database=DatabaseConfig(**data.get("database", {})),
+            reporting=ReportingConfig(**data.get("reporting", {})),
+            log_level=data.get("log_level", "INFO"),
+            log_file=data.get("log_file", "data/ilam_miner_detector.log")
+        )
+    
+    def _config_to_dict(self, config: AppConfig) -> Dict[str, Any]:
+        """Convert AppConfig to dictionary."""
+        return {
+            "scan": asdict(config.scan),
+            "geolocation": asdict(config.geolocation),
+            "ilam_region": asdict(config.ilam_region),
+            "miner_ports": asdict(config.miner_ports),
+            "database": asdict(config.database),
+            "reporting": asdict(config.reporting),
+            "log_level": config.log_level,
+            "log_file": config.log_file
         }
-        
-        Path(target_path).parent.mkdir(parents=True, exist_ok=True)
-        with open(target_path, 'w', encoding='utf-8') as f:
-            json.dump(config_data, f, indent=2)
-    
-    def get_raw_config(self) -> Dict[str, Any]:
-        """Get raw configuration dictionary."""
-        return self._config_data
+
+
+# Global config manager instance
+_config_manager: Optional[ConfigManager] = None
+
+
+def get_config_manager(config_path: str = "config/config.json") -> ConfigManager:
+    """Get or create global config manager instance."""
+    global _config_manager
+    if _config_manager is None:
+        _config_manager = ConfigManager(config_path)
+    return _config_manager
