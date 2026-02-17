@@ -1,6 +1,20 @@
-"""GUI components for Ilam Miner Detector."""
+"""
+GUI package for Ilam Miner Detector.
+PyQt5-based graphical user interface components.
+"""
 
 from .main_window import MainWindow
-from .widgets import ScanConfigWidget, ResultsTableWidget, LogWidget
+from .widgets import (
+    LogWidget,
+    ResultsTableWidget,
+    ScanConfigWidget,
+    ProgressWidget
+)
 
-__all__ = ['MainWindow', 'ScanConfigWidget', 'ResultsTableWidget', 'LogWidget']
+__all__ = [
+    'MainWindow',
+    'LogWidget',
+    'ResultsTableWidget',
+    'ScanConfigWidget',
+    'ProgressWidget'
+]

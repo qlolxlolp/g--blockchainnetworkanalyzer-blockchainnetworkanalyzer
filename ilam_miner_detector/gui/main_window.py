@@ -1,107 +1,209 @@
 """
-Main window for Ilam Miner Detector application.
+Main window for Ilam Miner Detector GUI.
 """
 
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                             QTabWidget, QProgressBar, QLabel, QPushButton,
-                             QMessageBox, QFileDialog, QSplitter)
-from PyQt5.QtCore import Qt, QUrl
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-import sys
 import os
-from datetime import datetime
+import sys
 import logging
+from pathlib import Path
+from datetime import datetime
+from typing import Optional
 
-from .widgets import ScanConfigWidget, ResultsTableWidget, LogWidget
-from ..config_manager import ConfigManager
-from ..database import Database
-from ..ip_manager import IPManager
-from ..network_scanner import NetworkScanner
-from ..geolocation import GeolocationService
-from ..map_generator import MapGenerator
-from ..reporter import Reporter
-from ..worker import ScanWorker
+from PyQt5.QtWidgets import (
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QTabWidget, QLabel, QMenuBar, QMenu,
+    QAction, QFileDialog, QMessageBox, QSplitter,
+    QStatusBar, QToolBar, QFrame, QGroupBox,
+    QDialog, QDialogButtonBox, QTextBrowser, QComboBox
+)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QIcon, QFont, QKeySequence
+
+# Add parent to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from ..config_manager import get_config_manager
+from ..database import get_db_manager, ScanRecord
+from ..worker import ScanWorker, GeolocationWorker, ReportWorker
+from ..reporter import get_report_generator
+from ..map_generator import get_map_generator
+from .widgets import LogWidget, ResultsTableWidget, ScanConfigWidget, ProgressWidget
+
+
+class AboutDialog(QDialog):
+    """About dialog."""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("About Ilam Miner Detector")
+        self.setFixedSize(500, 400)
+        
+        layout = QVBoxLayout(self)
+        
+        text = QTextBrowser()
+        text.setOpenExternalLinks(True)
+        text.setHtml("""
+        <h2>Ilam Miner Detector v1.0.0</h2>
+        <p>A security tool for detecting cryptocurrency mining operations in Ilam province, Iran.</p>
+        
+        <h3>Features</h3>
+        <ul>
+            <li>Real network scanning with TCP port checks</li>
+            <li>Geolocation with ip-api.com integration</li>
+            <li>Interactive map visualization with Folium</li>
+            <li>SQLite database for result storage</li>
+            <li>JSON, CSV, and HTML report generation</li>
+        </ul>
+        
+        <h3>Legal Notice</h3>
+        <p>This tool is for <b>authorized security auditing only</b>. Users must have explicit 
+        permission to scan target networks. Unauthorized scanning may violate laws and regulations.</p>
+        
+        <p style="color: #666; font-size: 11px; margin-top: 20px;">
+        © 2024 Security Team. All rights reserved.
+        </p>
+        """)
+        layout.addWidget(text)
+        
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
 
 
 class MainWindow(QMainWindow):
-    """Main application window."""
+    """
+    Main application window for Ilam Miner Detector.
+    """
     
-    def __init__(self, config: ConfigManager):
+    def __init__(self):
         super().__init__()
-        self.config = config
-        self.current_worker = None
-        self.current_scan_id = None
-        self.discovered_hosts = []
         
-        # Initialize services
-        self.database = Database(self.config.database.path)
-        self.geolocation_service = GeolocationService(
-            rate_limit_per_minute=self.config.geolocation.rate_limit_per_minute,
-            api_key=self.config.geolocation.api_key,
-            cache_provider=self.database
-        )
-        self.map_generator = MapGenerator()
-        self.reporter = Reporter()
+        self.setWindowTitle("Ilam Miner Detector")
+        self.setMinimumSize(1200, 800)
         
-        self.logger = logging.getLogger(__name__)
+        # Initialize components
+        self.config = get_config_manager().get()
+        self.db = get_db_manager()
         
-        self.init_ui()
-        self.setWindowTitle("Ilam Miner Detector v1.0.0")
-        self.setGeometry(100, 100, 1400, 900)
+        # Workers
+        self.scan_worker: Optional[ScanWorker] = None
+        self.geo_worker: Optional[GeolocationWorker] = None
+        self.report_worker: Optional[ReportWorker] = None
+        
+        # Current scan state
+        self.current_scan_id: Optional[int] = None
+        self.scanning = False
+        
+        self._setup_ui()
+        self._setup_menu()
+        self._setup_toolbar()
+        self._setup_statusbar()
+        self._setup_logging()
+        
+        self.log_widget.append_log("Ilam Miner Detector initialized", "INFO")
+        self.log_widget.append_log(f"Database: {self.config.database.db_path}", "INFO")
     
-    def init_ui(self):
-        """Initialize user interface."""
+    def _setup_ui(self):
+        """Setup the main UI."""
         # Central widget
         central = QWidget()
         self.setCentralWidget(central)
         
-        # Main layout
-        main_layout = QVBoxLayout()
-        central.setLayout(main_layout)
+        main_layout = QHBoxLayout(central)
+        main_layout.setSpacing(10)
         
-        # Title
-        title = QLabel("🔍 Ilam Miner Detector")
-        title.setStyleSheet("""
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-            padding: 10px;
-        """)
-        main_layout.addWidget(title)
-        
-        # Create splitter for left panel and right content
+        # Main splitter
         splitter = QSplitter(Qt.Horizontal)
+        main_layout.addWidget(splitter)
         
-        # Left panel: Scan configuration
-        self.config_widget = ScanConfigWidget(self.config.miner_ports.all_ports())
-        self.config_widget.scan_requested.connect(self.on_scan_requested)
-        splitter.addWidget(self.config_widget)
+        # Left panel - Configuration
+        left_panel = QWidget()
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(10, 10, 10, 10)
         
-        # Right panel: Tabs
-        right_widget = QWidget()
-        right_layout = QVBoxLayout()
-        right_widget.setLayout(right_layout)
+        # Scan configuration widget
+        self.scan_config = ScanConfigWidget()
+        left_layout.addWidget(self.scan_config)
         
-        # Progress bar
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        right_layout.addWidget(self.progress_bar)
+        # Control buttons
+        buttons_group = QGroupBox("Controls")
+        buttons_layout = QVBoxLayout(buttons_group)
         
-        # Progress label
-        self.progress_label = QLabel("")
-        self.progress_label.setVisible(False)
-        right_layout.addWidget(self.progress_label)
+        self.start_btn = QPushButton("▶ Start Scan")
+        self.start_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover { background-color: #45a049; }
+            QPushButton:disabled { background-color: #cccccc; }
+        """)
+        self.start_btn.clicked.connect(self._start_scan)
+        buttons_layout.addWidget(self.start_btn)
+        
+        self.stop_btn = QPushButton("⏹ Stop Scan")
+        self.stop_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #f44336;
+                color: white;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover { background-color: #da190b; }
+            QPushButton:disabled { background-color: #cccccc; }
+        """)
+        self.stop_btn.setEnabled(False)
+        self.stop_btn.clicked.connect(self._stop_scan)
+        buttons_layout.addWidget(self.stop_btn)
+        
+        self.export_btn = QPushButton("📊 Export Reports")
+        self.export_btn.clicked.connect(self._export_reports)
+        buttons_layout.addWidget(self.export_btn)
+        
+        left_layout.addWidget(buttons_group)
+        
+        # Progress widget
+        self.progress_widget = ProgressWidget()
+        left_layout.addWidget(self.progress_widget)
+        
+        left_layout.addStretch()
+        
+        splitter.addWidget(left_panel)
+        
+        # Right panel - Results and logs
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(10, 10, 10, 10)
         
         # Tab widget
         self.tabs = QTabWidget()
         
         # Results tab
+        results_widget = QWidget()
+        results_layout = QVBoxLayout(results_widget)
+        
         self.results_table = ResultsTableWidget()
-        self.tabs.addTab(self.results_table, "Results")
+        self.results_table.row_selected.connect(self._on_result_selected)
+        results_layout.addWidget(self.results_table)
+        
+        # Results filter
+        filter_layout = QHBoxLayout()
+        filter_layout.addWidget(QLabel("Filter:"))
+        self.filter_combo = QComboBox()
+        self.filter_combo.addItems(["All Results", "Miners Only", "Online Only"])
+        self.filter_combo.currentTextChanged.connect(self._on_filter_changed)
+        filter_layout.addWidget(self.filter_combo)
+        filter_layout.addStretch()
+        results_layout.addLayout(filter_layout)
+        
+        self.tabs.addTab(results_widget, "Results")
         
         # Map tab
-        self.map_view = QWebEngineView()
-        self.tabs.addTab(self.map_view, "Map")
+        self.map_widget = QTextBrowser()
+        self.map_widget.setPlaceholderText("Map will be displayed here after scan completion.")
+        self.tabs.addTab(self.map_widget, "Map")
         
         # Log tab
         self.log_widget = LogWidget()
@@ -109,299 +211,389 @@ class MainWindow(QMainWindow):
         
         right_layout.addWidget(self.tabs)
         
-        # Control buttons
-        button_layout = QHBoxLayout()
+        splitter.addWidget(right_panel)
         
-        self.stop_button = QPushButton("Stop Scan")
-        self.stop_button.clicked.connect(self.on_stop_scan)
-        self.stop_button.setEnabled(False)
-        self.stop_button.setStyleSheet("""
-            QPushButton {
-                background-color: #f44336;
-                color: white;
-                font-weight: bold;
-                padding: 8px;
-                border: none;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #da190b;
-            }
-        """)
-        button_layout.addWidget(self.stop_button)
-        
-        self.export_json_button = QPushButton("Export JSON")
-        self.export_json_button.clicked.connect(self.on_export_json)
-        button_layout.addWidget(self.export_json_button)
-        
-        self.export_csv_button = QPushButton("Export CSV")
-        self.export_csv_button.clicked.connect(self.on_export_csv)
-        button_layout.addWidget(self.export_csv_button)
-        
-        self.export_html_button = QPushButton("Export HTML")
-        self.export_html_button.clicked.connect(self.on_export_html)
-        button_layout.addWidget(self.export_html_button)
-        
-        button_layout.addStretch()
-        right_layout.addLayout(button_layout)
-        
-        splitter.addWidget(right_widget)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 3)
-        
-        main_layout.addWidget(splitter)
-        
-        # Status bar
-        self.statusBar().showMessage("Ready")
+        # Set splitter proportions
+        splitter.setSizes([350, 850])
     
-    def on_scan_requested(self, config: dict):
-        """Handle scan request from config widget."""
-        self.logger.info(f"Scan requested with config: {config}")
-        self.log_widget.log_info(f"Starting scan of {config['target']}")
+    def _setup_menu(self):
+        """Setup menu bar."""
+        menubar = self.menuBar()
         
-        # Validate and parse IP input
-        try:
-            ip_generator = IPManager.parse_input(config['target'])
-            ip_list = list(ip_generator)
-            
-            if not ip_list:
-                QMessageBox.warning(self, "Invalid Input", "No valid IP addresses found in target range.")
-                return
-            
-            self.log_widget.log_info(f"Parsed {len(ip_list)} IP addresses")
+        # File menu
+        file_menu = menubar.addMenu("&File")
         
-        except ValueError as e:
-            QMessageBox.critical(self, "Invalid Input", f"Error parsing IP range: {str(e)}")
+        new_scan_action = QAction("&New Scan", self)
+        new_scan_action.setShortcut(QKeySequence.New)
+        new_scan_action.triggered.connect(self._new_scan)
+        file_menu.addAction(new_scan_action)
+        
+        file_menu.addSeparator()
+        
+        export_action = QAction("&Export Reports...", self)
+        export_action.triggered.connect(self._export_reports)
+        file_menu.addAction(export_action)
+        
+        file_menu.addSeparator()
+        
+        exit_action = QAction("E&xit", self)
+        exit_action.setShortcut(QKeySequence.Quit)
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+        
+        # Tools menu
+        tools_menu = menubar.addMenu("&Tools")
+        
+        view_db_action = QAction("&View Database Stats", self)
+        view_db_action.triggered.connect(self._view_db_stats)
+        tools_menu.addAction(view_db_action)
+        
+        clear_cache_action = QAction("&Clear Geolocation Cache", self)
+        clear_cache_action.triggered.connect(self._clear_geo_cache)
+        tools_menu.addAction(clear_cache_action)
+        
+        # Help menu
+        help_menu = menubar.addMenu("&Help")
+        
+        about_action = QAction("&About", self)
+        about_action.triggered.connect(self._show_about)
+        help_menu.addAction(about_action)
+    
+    def _setup_toolbar(self):
+        """Setup toolbar."""
+        toolbar = QToolBar("Main Toolbar")
+        self.addToolBar(toolbar)
+        
+        toolbar.addAction("New Scan", self._new_scan)
+        toolbar.addSeparator()
+        toolbar.addAction("Export", self._export_reports)
+    
+    def _setup_statusbar(self):
+        """Setup status bar."""
+        self.statusbar = QStatusBar()
+        self.setStatusBar(self.statusbar)
+        self.statusbar.showMessage("Ready")
+    
+    def _setup_logging(self):
+        """Setup logging to GUI."""
+        # Create custom handler
+        class GuiLogHandler(logging.Handler):
+            def __init__(self, widget):
+                super().__init__()
+                self.widget = widget
+            
+            def emit(self, record):
+                msg = self.format(record)
+                self.widget.append_log(msg, record.levelname)
+        
+        # Add handler to root logger
+        handler = GuiLogHandler(self.log_widget)
+        handler.setFormatter(logging.Formatter('%(message)s'))
+        logging.getLogger().addHandler(handler)
+    
+    def _start_scan(self):
+        """Start a new scan."""
+        # Validate CIDR
+        if not self.scan_config._validate_cidr():
+            QMessageBox.warning(self, "Invalid Input", "Please enter a valid CIDR range.")
             return
         
-        # Create database scan record
-        scan_name = f"Scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        self.current_scan_id = self.database.create_scan(
-            scan_name=scan_name,
-            target_range=config['target'],
-            config=config
-        )
+        cidr = self.scan_config.get_cidr()
         
-        # Clear previous results
-        self.discovered_hosts = []
-        self.results_table.clear_results()
-        
-        # Create scanner
-        scanner = NetworkScanner(
-            timeout=config['timeout'] / 1000.0,
-            max_concurrent=config['max_concurrent'],
-            enable_ping=config['enable_ping'],
-            enable_banner_grab=config['enable_banner'],
-            banner_timeout=2.0
-        )
-        
-        # Create and start worker
-        self.current_worker = ScanWorker(
-            scanner=scanner,
-            ip_generator=iter(ip_list),
-            ports=config['ports'],
-            scan_id=self.current_scan_id,
-            database=self.database,
-            geolocation_service=self.geolocation_service if config['enable_geolocation'] else None,
-            filter_ilam=config['filter_ilam']
-        )
-        
-        # Connect signals
-        self.current_worker.progress_updated.connect(self.on_progress_updated)
-        self.current_worker.host_discovered.connect(self.on_host_discovered)
-        self.current_worker.scan_completed.connect(self.on_scan_completed)
-        self.current_worker.error_occurred.connect(self.on_error_occurred)
-        
-        # Update UI state
-        self.config_widget.set_scan_running(True)
-        self.stop_button.setEnabled(True)
-        self.progress_bar.setVisible(True)
-        self.progress_bar.setValue(0)
-        self.progress_label.setVisible(True)
-        self.statusBar().showMessage("Scan in progress...")
-        
-        # Start worker
-        self.current_worker.start()
-    
-    def on_stop_scan(self):
-        """Handle stop scan request."""
-        if self.current_worker and self.current_worker.isRunning():
-            self.log_widget.log_warning("Stopping scan...")
-            self.current_worker.cancel()
-            self.current_worker.wait()
-            self.statusBar().showMessage("Scan stopped by user")
-    
-    def on_progress_updated(self, scanned: int, total: int, message: str):
-        """Handle progress update from worker."""
-        progress = int((scanned / total) * 100) if total > 0 else 0
-        self.progress_bar.setValue(progress)
-        self.progress_label.setText(f"Progress: {scanned}/{total} IPs scanned ({progress}%)")
-    
-    def on_host_discovered(self, host_data: dict):
-        """Handle host discovery from worker."""
-        self.discovered_hosts.append(host_data)
-        self.results_table.add_host(host_data)
-        
-        if host_data.get('is_miner'):
-            self.log_widget.log_success(
-                f"MINER DETECTED: {host_data['ip_address']} ({host_data.get('miner_type', 'Unknown')})"
-            )
-        else:
-            self.log_widget.log_info(f"Host found: {host_data['ip_address']}")
-    
-    def on_scan_completed(self, success: bool, message: str):
-        """Handle scan completion."""
-        # Update database
-        if self.current_scan_id:
-            self.database.complete_scan(
-                self.current_scan_id,
-                status='completed' if success else 'cancelled'
-            )
-        
-        # Update UI state
-        self.config_widget.set_scan_running(False)
-        self.stop_button.setEnabled(False)
-        self.progress_bar.setVisible(False)
-        self.progress_label.setVisible(False)
-        
-        if success:
-            self.log_widget.log_success(f"Scan completed! Found {len(self.discovered_hosts)} hosts")
-            self.statusBar().showMessage(f"Scan completed - {len(self.discovered_hosts)} hosts discovered")
-            
-            # Generate map if we have geolocated hosts
-            self.update_map()
-        else:
-            self.log_widget.log_warning(message)
-            self.statusBar().showMessage(message)
-    
-    def on_error_occurred(self, error_message: str):
-        """Handle error from worker."""
-        self.log_widget.log_error(error_message)
-        QMessageBox.critical(self, "Scan Error", error_message)
-    
-    def update_map(self):
-        """Update map view with discovered hosts."""
-        hosts_with_geo = [h for h in self.discovered_hosts if h.get('latitude') and h.get('longitude')]
-        
-        if not hosts_with_geo:
-            self.log_widget.log_warning("No geolocated hosts to display on map")
-            return
-        
+        # Confirm for large ranges
+        from ..ip_manager import get_ip_manager
+        ip_manager = get_ip_manager()
         try:
-            # Generate map HTML
-            map_obj = self.map_generator.create_map(hosts_with_geo)
-            
-            # Save to temp file
-            import tempfile
-            temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False)
-            map_obj.save(temp_file.name)
-            temp_file.close()
-            
-            # Load in web view
-            self.map_view.setUrl(QUrl.fromLocalFile(temp_file.name))
-            
-            self.log_widget.log_info(f"Map generated with {len(hosts_with_geo)} locations")
-        
-        except Exception as e:
-            self.log_widget.log_error(f"Failed to generate map: {str(e)}")
-            self.logger.error(f"Map generation error: {e}", exc_info=True)
-    
-    def on_export_json(self):
-        """Export results to JSON."""
-        if not self.current_scan_id:
-            QMessageBox.warning(self, "No Data", "No scan data to export.")
-            return
-        
-        scan_data = self.database.get_scan(self.current_scan_id)
-        hosts = self.database.get_scan_hosts(self.current_scan_id)
-        
-        try:
-            filepath = self.reporter.generate_json_report(scan_data, hosts)
-            self.log_widget.log_success(f"JSON report exported to {filepath}")
-            QMessageBox.information(self, "Export Complete", f"Report saved to:\n{filepath}")
-        except Exception as e:
-            self.log_widget.log_error(f"Export failed: {str(e)}")
-            QMessageBox.critical(self, "Export Error", str(e))
-    
-    def on_export_csv(self):
-        """Export results to CSV."""
-        if not self.current_scan_id:
-            QMessageBox.warning(self, "No Data", "No scan data to export.")
-            return
-        
-        hosts = self.database.get_scan_hosts(self.current_scan_id)
-        
-        try:
-            filepath = self.reporter.generate_csv_report(hosts)
-            self.log_widget.log_success(f"CSV report exported to {filepath}")
-            QMessageBox.information(self, "Export Complete", f"Report saved to:\n{filepath}")
-        except Exception as e:
-            self.log_widget.log_error(f"Export failed: {str(e)}")
-            QMessageBox.critical(self, "Export Error", str(e))
-    
-    def on_export_html(self):
-        """Export results to HTML with embedded map."""
-        if not self.current_scan_id:
-            QMessageBox.warning(self, "No Data", "No scan data to export.")
-            return
-        
-        scan_data = self.database.get_scan(self.current_scan_id)
-        hosts = self.database.get_scan_hosts(self.current_scan_id)
-        
-        try:
-            # Generate map first
-            hosts_with_geo = [h for h in hosts if h.get('latitude') and h.get('longitude')]
-            map_path = None
-            
-            if hosts_with_geo:
-                import tempfile
-                temp_map = tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False)
-                self.map_generator.save_map(
-                    self.map_generator.create_map(hosts_with_geo),
-                    temp_map.name
+            info = ip_manager.parse_cidr(cidr)
+            if info.total_hosts > 10000:
+                reply = QMessageBox.question(
+                    self, "Large Scan Range",
+                    f"This will scan {info.total_hosts:,} hosts. Continue?",
+                    QMessageBox.Yes | QMessageBox.No
                 )
-                map_path = temp_map.name
-            
-            # Generate HTML report
-            filepath = self.reporter.generate_html_report(scan_data, hosts, map_html_path=map_path)
-            self.log_widget.log_success(f"HTML report exported to {filepath}")
-            QMessageBox.information(self, "Export Complete", f"Report saved to:\n{filepath}")
-        
-        except Exception as e:
-            self.log_widget.log_error(f"Export failed: {str(e)}")
-            QMessageBox.critical(self, "Export Error", str(e))
-    
-    def closeEvent(self, event):
-        """Handle window close event."""
-        # Stop any running scan
-        if self.current_worker and self.current_worker.isRunning():
-            reply = QMessageBox.question(
-                self,
-                "Scan in Progress",
-                "A scan is currently running. Are you sure you want to quit?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No
-            )
-            
-            if reply == QMessageBox.Yes:
-                self.current_worker.cancel()
-                self.current_worker.wait()
-            else:
-                event.ignore()
-                return
-        
-        # Close database
-        self.database.close()
-        
-        # Close geolocation service
-        import asyncio
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self.geolocation_service.close())
-            else:
-                loop.run_until_complete(self.geolocation_service.close())
+                if reply != QMessageBox.Yes:
+                    return
         except:
             pass
         
+        # Create scan record
+        scan_name = f"Scan {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        self.current_scan_id = self.db.create_scan(scan_name, cidr)
+        
+        # Clear previous results
+        self.results_table.clear_results()
+        self.progress_widget.reset()
+        
+        # Create and start worker
+        self.scan_worker = ScanWorker(self.current_scan_id, cidr, scan_name, self)
+        self.scan_worker.progress_updated.connect(self._on_scan_progress)
+        self.scan_worker.host_scanned.connect(self._on_host_scanned)
+        self.scan_worker.scan_completed.connect(self._on_scan_completed)
+        self.scan_worker.scan_error.connect(self._on_scan_error)
+        self.scan_worker.log_message.connect(self._log_message)
+        
+        self.scan_worker.start()
+        
+        # Update UI state
+        self.scanning = True
+        self.start_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+        self.statusbar.showMessage(f"Scanning {cidr}...")
+        
+        self._log_message(f"Started scan of {cidr}")
+    
+    def _stop_scan(self):
+        """Stop the current scan."""
+        if self.scan_worker and self.scan_worker.isRunning():
+            self.scan_worker.cancel()
+            self._log_message("Stopping scan...")
+    
+    def _on_scan_progress(self, current: int, total: int, status: str):
+        """Handle scan progress update."""
+        self.progress_widget.set_progress(current, total)
+        self.progress_widget.set_status(status)
+        self.statusbar.showMessage(f"Scanning: {current}/{total}")
+    
+    def _on_host_scanned(self, result):
+        """Handle host scan result."""
+        self.results_table.add_result(result)
+        
+        # Update stats
+        responsive = sum(1 for i in range(self.results_table.rowCount()) 
+                        if self.results_table.get_result(i) and 
+                        self.results_table.get_result(i).is_responsive)
+        miners = sum(1 for i in range(self.results_table.rowCount()) 
+                    if self.results_table.get_result(i) and 
+                    self.results_table.get_result(i).is_miner_detected)
+        
+        self.progress_widget.set_stats(responsive, miners)
+    
+    def _on_scan_completed(self, complete_info):
+        """Handle scan completion."""
+        self.scanning = False
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        
+        if complete_info.success:
+            self.statusbar.showMessage(
+                f"Scan complete. Found {complete_info.miners_detected} potential miners."
+            )
+            self._log_message(
+                f"Scan completed. Total: {complete_info.total_hosts}, "
+                f"Responsive: {complete_info.responsive_hosts}, "
+                f"Miners: {complete_info.miners_detected}"
+            )
+            
+            # Auto-generate map
+            self._generate_map()
+            
+            # Auto-export if enabled
+            if self.config.reporting.auto_export:
+                self._export_reports()
+        else:
+            self.statusbar.showMessage(f"Scan failed: {complete_info.error_message}")
+            self._log_message(f"Scan failed: {complete_info.error_message}", "ERROR")
+    
+    def _on_scan_error(self, error_message: str):
+        """Handle scan error."""
+        QMessageBox.critical(self, "Scan Error", error_message)
+    
+    def _on_result_selected(self, row: int):
+        """Handle result row selection."""
+        result = self.results_table.get_result(row)
+        if result:
+            self._log_message(f"Selected: {result.ip_address}")
+    
+    def _on_filter_changed(self, filter_text: str):
+        """Handle filter change."""
+        if filter_text == "Miners Only":
+            self.results_table.filter_miners_only(True)
+        elif filter_text == "Online Only":
+            # Show only responsive hosts
+            for row in range(self.results_table.rowCount()):
+                result = self.results_table.get_result(row)
+                self.results_table.setRowHidden(row, result and not result.is_responsive)
+        else:
+            # Show all
+            for row in range(self.results_table.rowCount()):
+                self.results_table.setRowHidden(row, False)
+    
+    def _generate_map(self):
+        """Generate map for current results."""
+        if not self.current_scan_id:
+            return
+        
+        try:
+            # Get miner hosts
+            miners = self.db.get_miner_hosts(self.current_scan_id)
+            
+            if not miners:
+                self.map_widget.setText("No miners detected to display on map.")
+                return
+            
+            # Get geolocation data
+            from ..geolocation import get_geolocation_service
+            geo_service = get_geolocation_service()
+            
+            map_data = []
+            for miner in miners:
+                geo = geo_service.lookup(miner.ip_address)
+                if geo.success:
+                    import json
+                    try:
+                        ports = json.loads(miner.open_ports) if miner.open_ports else []
+                    except:
+                        ports = []
+                    
+                    map_data.append({
+                        'ip_address': miner.ip_address,
+                        'latitude': geo.latitude,
+                        'longitude': geo.longitude,
+                        'confidence_score': miner.confidence_score,
+                        'miner_type': miner.miner_type,
+                        'city': geo.city,
+                        'region': geo.region,
+                        'country': geo.country,
+                        'isp': geo.isp,
+                        'open_ports': ports
+                    })
+            
+            if map_data:
+                map_gen = get_map_generator()
+                map_path = self.config.reporting.reports_dir
+                Path(map_path).mkdir(parents=True, exist_ok=True)
+                
+                timestamp = datetime.now().strftime(self.config.reporting.timestamp_format)
+                output_path = Path(map_path) / f"map_scan_{self.current_scan_id}_{timestamp}.html"
+                
+                map_gen.create_summary_map(map_data, str(output_path))
+                
+                # Display map path
+                self.map_widget.setText(f"Map generated: {output_path}")
+                self._log_message(f"Map saved to {output_path}")
+            else:
+                self.map_widget.setText("Could not geolocate any miner addresses.")
+                
+        except Exception as e:
+            self._log_message(f"Map generation failed: {e}", "ERROR")
+            self.map_widget.setText(f"Map generation failed: {e}")
+    
+    def _export_reports(self):
+        """Export scan reports."""
+        if not self.current_scan_id:
+            QMessageBox.warning(self, "No Scan", "No scan data to export.")
+            return
+        
+        self.report_worker = ReportWorker(self.current_scan_id, parent=self)
+        self.report_worker.report_generated.connect(self._on_report_generated)
+        self.report_worker.report_error.connect(self._on_report_error)
+        self.report_worker.log_message.connect(self._log_message)
+        self.report_worker.start()
+    
+    def _on_report_generated(self, fmt: str, path: str):
+        """Handle report generation."""
+        self._log_message(f"Generated {fmt.upper()} report: {path}")
+        self.statusbar.showMessage(f"Report saved: {path}")
+    
+    def _on_report_error(self, fmt: str, error: str):
+        """Handle report error."""
+        self._log_message(f"Failed to generate {fmt} report: {error}", "ERROR")
+    
+    def _new_scan(self):
+        """Reset for new scan."""
+        if self.scanning:
+            reply = QMessageBox.question(
+                self, "Scan in Progress",
+                "A scan is currently running. Start a new one?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if reply != QMessageBox.Yes:
+                return
+            self._stop_scan()
+        
+        self.results_table.clear_results()
+        self.progress_widget.reset()
+        self.map_widget.clear()
+        self.current_scan_id = None
+        self.statusbar.showMessage("Ready for new scan")
+    
+    def _view_db_stats(self):
+        """View database statistics."""
+        stats = self.db.get_stats()
+        msg = f"""Database Statistics:
+        
+Total Scans: {stats['total_scans']}
+Total Hosts: {stats['total_hosts']}
+Total Miners: {stats['total_miners']}
+Geolocation Cache: {stats['geolocation_cache_entries']} entries
+"""
+        QMessageBox.information(self, "Database Statistics", msg)
+    
+    def _clear_geo_cache(self):
+        """Clear geolocation cache."""
+        from ..geolocation import get_geolocation_service
+        
+        geo_service = get_geolocation_service()
+        removed = geo_service.clean_cache()
+        self._log_message(f"Cleared {removed} expired geolocation cache entries")
+        QMessageBox.information(self, "Cache Cleared", f"Removed {removed} expired entries.")
+    
+    def _show_about(self):
+        """Show about dialog."""
+        dialog = AboutDialog(self)
+        dialog.exec_()
+    
+    def _log_message(self, message: str, level: str = "INFO"):
+        """Log a message to the log widget."""
+        self.log_widget.append_log(message, level)
+    
+    def closeEvent(self, event):
+        """Handle window close event."""
+        if self.scanning:
+            reply = QMessageBox.question(
+                self, "Scan in Progress",
+                "A scan is currently running. Close anyway?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if reply == QMessageBox.No:
+                event.ignore()
+                return
+            self._stop_scan()
+        
         event.accept()
+
+
+def main():
+    """Main entry point for GUI."""
+    from PyQt5.QtWidgets import QApplication
+    
+    app = QApplication(sys.argv)
+    app.setApplicationName("Ilam Miner Detector")
+    app.setStyle('Fusion')
+    
+    # Apply dark palette
+    from PyQt5.QtGui import QPalette, QColor
+    palette = QPalette()
+    palette.setColor(QPalette.Window, QColor(53, 53, 53))
+    palette.setColor(QPalette.WindowText, Qt.white)
+    palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+    palette.setColor(QPalette.ToolTipBase, Qt.white)
+    palette.setColor(QPalette.ToolTipText, Qt.white)
+    palette.setColor(QPalette.Text, Qt.white)
+    palette.setColor(QPalette.Button, QColor(53, 53, 53))
+    palette.setColor(QPalette.ButtonText, Qt.white)
+    palette.setColor(QPalette.BrightText, Qt.red)
+    palette.setColor(QPalette.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.HighlightedText, Qt.black)
+    app.setPalette(palette)
+    
+    window = MainWindow()
+    window.show()
+    
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
