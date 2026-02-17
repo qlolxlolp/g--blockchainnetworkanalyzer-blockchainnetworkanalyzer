@@ -383,6 +383,350 @@
                 </Grid>
             </TabItem>
 
+            <!-- Analytics Dashboard Tab -->
+            <TabItem Header="Analytics">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Dashboard Summary Cards -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="Total Scans" FontSize="12" Opacity="0.7"/>
+                                    <TextBlock x:Name="AnalyticsTotalScans" Text="0" FontSize="28" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="5,0,5,0">
+                                <StackPanel>
+                                    <TextBlock Text="Miners Detected" FontSize="12" Opacity="0.7"/>
+                                    <TextBlock x:Name="AnalyticsTotalMiners" Text="0" FontSize="28" FontWeight="Bold" Foreground="#4CAF50"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource CardStyle}" Margin="5,0,5,0">
+                                <StackPanel>
+                                    <TextBlock Text="Active Alerts" FontSize="12" Opacity="0.7"/>
+                                    <TextBlock x:Name="AnalyticsActiveAlerts" Text="0" FontSize="28" FontWeight="Bold" Foreground="#FF9800"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="3" Style="{StaticResource CardStyle}" Margin="10,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Scheduled Scans" FontSize="12" Opacity="0.7"/>
+                                    <TextBlock x:Name="AnalyticsScheduledScans" Text="0" FontSize="28" FontWeight="Bold" Foreground="#2196F3"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- ISP Statistics -->
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="ISP Distribution" 
+                                          FontSize="16" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                <DataGrid x:Name="ISPStatisticsDataGrid" 
+                                         AutoGenerateColumns="False" 
+                                         IsReadOnly="True"
+                                         Height="200">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="ISP Name" Binding="{Binding ISPName}" Width="*"/>
+                                        <DataGridTextColumn Header="ASN" Binding="{Binding ASN}" Width="120"/>
+                                        <DataGridTextColumn Header="Total Miners" Binding="{Binding TotalMiners}" Width="120"/>
+                                        <DataGridTextColumn Header="Unique IPs" Binding="{Binding UniqueIPs}" Width="120"/>
+                                        <DataGridTextColumn Header="Risk Score" Binding="{Binding RiskScore, StringFormat='{}{0:F1}'}" Width="100"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Geographic Distribution -->
+                        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Geographic Distribution" 
+                                          FontSize="16" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                <DataGrid x:Name="GeographicDistributionDataGrid" 
+                                         AutoGenerateColumns="False" 
+                                         IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Province" Binding="{Binding Province}" Width="*"/>
+                                        <DataGridTextColumn Header="City" Binding="{Binding City}" Width="*"/>
+                                        <DataGridTextColumn Header="Total Miners" Binding="{Binding TotalMiners}" Width="120"/>
+                                        <DataGridTextColumn Header="Active" Binding="{Binding ActiveMiners}" Width="100"/>
+                                        <DataGridTextColumn Header="Last Updated" Binding="{Binding LastUpdated, StringFormat='{}{0:yyyy-MM-dd}'}" Width="120"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Detection Rules Tab -->
+            <TabItem Header="Detection Rules">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Detection Rules Management" 
+                                      FontSize="18" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,15"/>
+                            <TextBlock Text="Configure rules for detecting cryptocurrency mining activities" 
+                                      FontSize="14" 
+                                      Opacity="0.7"
+                                      Margin="0,0,0,15"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="AddRuleBtn" 
+                                       Content="Add New Rule" 
+                                       Click="AddRuleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="EditRuleBtn" 
+                                       Content="Edit Rule" 
+                                       Click="EditRuleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="DeleteRuleBtn" 
+                                       Content="Delete Rule" 
+                                       Click="DeleteRuleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="ImportRulesBtn" 
+                                       Content="Import Rules" 
+                                       Click="ImportRulesBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="ExportRulesBtn" 
+                                       Content="Export Rules" 
+                                       Click="ExportRulesBtn_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                        <DataGrid x:Name="DetectionRulesDataGrid" 
+                                 AutoGenerateColumns="False" 
+                                 IsReadOnly="True"
+                                 SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="250"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                                <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100"/>
+                                <DataGridTextColumn Header="Confidence" Binding="{Binding ConfidenceThreshold, StringFormat='{}{0:P0}'}" Width="100"/>
+                                <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}" Width="80"/>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Scheduling Tab -->
+            <TabItem Header="Scheduling">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                        <StackPanel>
+                            <TextBlock Text="Scan Scheduling" 
+                                      FontSize="18" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,15"/>
+                            <TextBlock Text="Configure automated scan schedules" 
+                                      FontSize="14" 
+                                      Opacity="0.7"
+                                      Margin="0,0,0,15"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="AddScheduleBtn" 
+                                       Content="Add Schedule" 
+                                       Click="AddScheduleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="EditScheduleBtn" 
+                                       Content="Edit Schedule" 
+                                       Click="EditScheduleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="DeleteScheduleBtn" 
+                                       Content="Delete Schedule" 
+                                       Click="DeleteScheduleBtn_Click"
+                                       Margin="0,0,10,0"/>
+                                <Button x:Name="RunNowBtn" 
+                                       Content="Run Now" 
+                                       Click="RunNowBtn_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+                        <DataGrid x:Name="ScheduledScansDataGrid" 
+                                 AutoGenerateColumns="False" 
+                                 IsReadOnly="True"
+                                 SelectionMode="Single">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
+                                <DataGridTextColumn Header="Frequency" Binding="{Binding Frequency}" Width="100"/>
+                                <DataGridTextColumn Header="Next Run" Binding="{Binding NextRun, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="150"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                                <DataGridCheckBoxColumn Header="Enabled" Binding="{Binding IsEnabled}" Width="80"/>
+                                <DataGridTextColumn Header="Target Province" Binding="{Binding TargetProvince}" Width="150"/>
+                                <DataGridTextColumn Header="Run Count" Binding="{Binding RunCount}" Width="100"/>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- Data Management Tab -->
+            <TabItem Header="Data Management">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Export Section -->
+                        <Border Grid.Row="0" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="Export Data" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                <TextBlock Text="Export scan data and reports in various formats" 
+                                          FontSize="14" 
+                                          Opacity="0.7"
+                                          Margin="0,0,0,15"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Select Scan to Export" FontSize="12" Margin="0,0,0,5"/>
+                                        <ComboBox x:Name="ExportScanCombo" materialDesign:HintAssist.Hint="Select Scan"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                        <TextBlock Text="Export Format" FontSize="12" Margin="0,0,0,5"/>
+                                        <ComboBox x:Name="ExportFormatCombo" materialDesign:HintAssist.Hint="Select Format">
+                                            <ComboBoxItem Content="HTML Report" Tag="Html"/>
+                                            <ComboBoxItem Content="CSV" Tag="Csv"/>
+                                            <ComboBoxItem Content="JSON" Tag="Json"/>
+                                            <ComboBoxItem Content="XML" Tag="Xml"/>
+                                            <ComboBoxItem Content="Text" Tag="Txt"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <Button Grid.Column="2" 
+                                           x:Name="ExportDataBtn" 
+                                           Content="Export" 
+                                           Click="ExportDataBtn_Click"
+                                           VerticalAlignment="Bottom"
+                                           Margin="10,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Import Section -->
+                        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
+                            <StackPanel>
+                                <TextBlock Text="Import Data" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                <TextBlock Text="Import scan data from external sources" 
+                                          FontSize="14" 
+                                          Opacity="0.7"
+                                          Margin="0,0,0,15"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Import Format" FontSize="12" Margin="0,0,0,5"/>
+                                        <ComboBox x:Name="ImportFormatCombo" materialDesign:HintAssist.Hint="Select Format">
+                                            <ComboBoxItem Content="JSON" Tag="Json"/>
+                                            <ComboBoxItem Content="XML" Tag="Xml"/>
+                                            <ComboBoxItem Content="CSV" Tag="Csv"/>
+                                            <ComboBoxItem Content="Nmap XML" Tag="Nmap"/>
+                                        </ComboBox>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                        <TextBlock Text="File Path" FontSize="12" Margin="0,0,0,5"/>
+                                        <TextBox x:Name="ImportFilePathTxt" materialDesign:HintAssist.Hint="Select file to import"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                        <Button x:Name="BrowseImportBtn" 
+                                               Content="Browse" 
+                                               Click="BrowseImportBtn_Click"
+                                               Margin="0,0,10,0"/>
+                                        <Button x:Name="ImportDataBtn" 
+                                               Content="Import" 
+                                               Click="ImportDataBtn_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Backup Section -->
+                        <Border Grid.Row="2" Style="{StaticResource CardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Database Backup" 
+                                          FontSize="18" 
+                                          FontWeight="Bold" 
+                                          Margin="0,0,0,15"/>
+                                <TextBlock Text="Create or restore database backups" 
+                                          FontSize="14" 
+                                          Opacity="0.7"
+                                          Margin="0,0,0,15"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="CreateBackupBtn" 
+                                           Content="Create Backup" 
+                                           Click="CreateBackupBtn_Click"
+                                           Margin="0,0,10,0"/>
+                                    <Button x:Name="RestoreBackupBtn" 
+                                           Content="Restore Backup" 
+                                           Click="RestoreBackupBtn_Click"
+                                           Margin="0,0,10,0"/>
+                                    <Button x:Name="OpenReportsFolderBtn" 
+                                           Content="Open Reports Folder" 
+                                           Click="OpenReportsFolderBtn_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- Settings Tab -->
             <TabItem Header="Settings">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -405,6 +749,29 @@
                                 
                                 <Separator Margin="0,0,0,20"/>
                                 
+                                <TextBlock Text="Detection Engine Settings" 
+                                          FontSize="16" 
+                                          FontWeight="SemiBold" 
+                                          Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableDetectionRulesCheck" 
+                                         Content="Enable Detection Rules Engine" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableMinerSignaturesCheck" 
+                                         Content="Enable Miner Signature Detection" 
+                                         IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <Slider x:Name="ConfidenceThresholdSlider" 
+                                       Minimum="0" Maximum="100" Value="70"
+                                       Margin="0,0,0,5"/>
+                                <TextBlock x:Name="ConfidenceThresholdLabel" 
+                                          Text="Confidence Threshold: 70%"
+                                          FontSize="12" 
+                                          Opacity="0.7"
+                                          Margin="0,0,0,20"/>
+                                
+                                <Separator Margin="0,0,0,20"/>
+                                
                                 <TextBlock Text="Advanced Options" 
                                           FontSize="16" 
                                           FontWeight="SemiBold" 
@@ -416,11 +783,17 @@
                                 <CheckBox x:Name="EnableAutoBackupCheck" 
                                          Content="Enable Automatic Database Backup" 
                                          IsChecked="True"
+                                         Margin="0,0,0,10"/>
+                                <CheckBox x:Name="EnableSchedulerCheck" 
+                                         Content="Enable Scan Scheduler" 
+                                         IsChecked="True"
                                          Margin="0,0,0,20"/>
                                 
-                                <Button Content="Save Settings" 
+                                <Button x:Name="SaveSettingsBtn"
+                                       Content="Save Settings" 
                                        HorizontalAlignment="Right"
-                                       Padding="30,10"/>
+                                       Padding="30,10"
+                                       Click="SaveSettingsBtn_Click"/>
                             </StackPanel>
                         </Border>
                     </Grid>
