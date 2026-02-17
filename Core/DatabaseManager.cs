@@ -253,6 +253,201 @@ namespace BlockchainNetworkAnalyzer.Core
                     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                 )";
 
+            // Detection Rules Table
+            var detectionRulesTable = @"
+                CREATE TABLE IF NOT EXISTS DetectionRules (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    Description TEXT,
+                    Type TEXT NOT NULL,
+                    Severity TEXT NOT NULL,
+                    ConfidenceThreshold REAL DEFAULT 0.7,
+                    IsActive INTEGER DEFAULT 1,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    LastModified DATETIME,
+                    CreatedBy TEXT
+                )";
+
+            // Rule Conditions Table
+            var ruleConditionsTable = @"
+                CREATE TABLE IF NOT EXISTS RuleConditions (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    RuleId INTEGER NOT NULL,
+                    Property TEXT NOT NULL,
+                    Operator TEXT NOT NULL,
+                    Value TEXT NOT NULL,
+                    OrderIndex INTEGER DEFAULT 0,
+                    LogicalOperator TEXT DEFAULT 'AND',
+                    FOREIGN KEY (RuleId) REFERENCES DetectionRules(Id) ON DELETE CASCADE
+                )";
+
+            // Rule Actions Table
+            var ruleActionsTable = @"
+                CREATE TABLE IF NOT EXISTS RuleActions (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    RuleId INTEGER NOT NULL,
+                    ActionType TEXT NOT NULL,
+                    ActionValue TEXT,
+                    OrderIndex INTEGER DEFAULT 0,
+                    FOREIGN KEY (RuleId) REFERENCES DetectionRules(Id) ON DELETE CASCADE
+                )";
+
+            // Miner Signatures Table
+            var minerSignaturesTable = @"
+                CREATE TABLE IF NOT EXISTS MinerSignatures (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    MinerType TEXT NOT NULL,
+                    Version TEXT,
+                    KnownPorts TEXT,
+                    BannerSignatures TEXT,
+                    HashAlgorithms TEXT,
+                    Protocol TEXT,
+                    ConfidenceWeight REAL DEFAULT 1.0,
+                    IsActive INTEGER DEFAULT 1,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                )";
+
+            // Detection Results Table
+            var detectionResultsTable = @"
+                CREATE TABLE IF NOT EXISTS DetectionResults (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    RuleId INTEGER,
+                    ScanResultId INTEGER NOT NULL,
+                    IPResultId INTEGER NOT NULL,
+                    IPAddress TEXT NOT NULL,
+                    Port INTEGER,
+                    IsDetected INTEGER DEFAULT 0,
+                    ConfidenceScore REAL DEFAULT 0,
+                    DetectionType TEXT,
+                    Details TEXT,
+                    DetectedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (ScanResultId) REFERENCES ScanResults(Id) ON DELETE CASCADE,
+                    FOREIGN KEY (IPResultId) REFERENCES IPResults(Id) ON DELETE CASCADE
+                )";
+
+            // Scheduled Scans Table
+            var scheduledScansTable = @"
+                CREATE TABLE IF NOT EXISTS ScheduledScans (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL,
+                    Description TEXT,
+                    Frequency TEXT NOT NULL,
+                    CronExpression TEXT,
+                    StartDate DATETIME NOT NULL,
+                    EndDate DATETIME,
+                    StartTime TEXT,
+                    Status TEXT DEFAULT 'Pending',
+                    IsEnabled INTEGER DEFAULT 1,
+                    Configuration TEXT,
+                    TargetProvince TEXT,
+                    TargetCities TEXT,
+                    TargetISPs TEXT,
+                    EmailEnabled INTEGER DEFAULT 0,
+                    EmailAddress TEXT,
+                    WebhookEnabled INTEGER DEFAULT 0,
+                    WebhookUrl TEXT,
+                    OnCompletion INTEGER DEFAULT 1,
+                    OnDetection INTEGER DEFAULT 1,
+                    OnFailure INTEGER DEFAULT 1,
+                    IncludeReport INTEGER DEFAULT 1,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    LastRun DATETIME,
+                    NextRun DATETIME,
+                    RunCount INTEGER DEFAULT 0,
+                    CreatedBy TEXT
+                )";
+
+            // Schedule Executions Table
+            var scheduleExecutionsTable = @"
+                CREATE TABLE IF NOT EXISTS ScheduleExecutions (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ScheduledScanId INTEGER NOT NULL,
+                    ScanResultId INTEGER,
+                    StartedAt DATETIME NOT NULL,
+                    CompletedAt DATETIME,
+                    Status TEXT NOT NULL,
+                    ErrorMessage TEXT,
+                    HostsFound INTEGER DEFAULT 0,
+                    MinersDetected INTEGER DEFAULT 0,
+                    NotificationSent INTEGER DEFAULT 0,
+                    FOREIGN KEY (ScheduledScanId) REFERENCES ScheduledScans(Id) ON DELETE CASCADE,
+                    FOREIGN KEY (ScanResultId) REFERENCES ScanResults(Id)
+                )";
+
+            // Scan Comparisons Table
+            var scanComparisonsTable = @"
+                CREATE TABLE IF NOT EXISTS ScanComparisons (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    BaseScanId INTEGER NOT NULL,
+                    ComparisonScanId INTEGER NOT NULL,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    NewHosts INTEGER DEFAULT 0,
+                    RemovedHosts INTEGER DEFAULT 0,
+                    ChangedHosts INTEGER DEFAULT 0,
+                    NewMiners INTEGER DEFAULT 0,
+                    RemovedMiners INTEGER DEFAULT 0
+                )";
+
+            // Host Differences Table
+            var hostDifferencesTable = @"
+                CREATE TABLE IF NOT EXISTS HostDifferences (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ComparisonId INTEGER NOT NULL,
+                    IPAddress TEXT NOT NULL,
+                    Type TEXT NOT NULL,
+                    PropertyName TEXT,
+                    OldValue TEXT,
+                    NewValue TEXT,
+                    FOREIGN KEY (ComparisonId) REFERENCES ScanComparisons(Id) ON DELETE CASCADE
+                )";
+
+            // Risk Assessments Table
+            var riskAssessmentsTable = @"
+                CREATE TABLE IF NOT EXISTS RiskAssessments (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    IPAddress TEXT NOT NULL UNIQUE,
+                    RiskScore REAL DEFAULT 0,
+                    Level TEXT DEFAULT 'None',
+                    RiskFactors TEXT,
+                    Province TEXT,
+                    City TEXT,
+                    ISP TEXT,
+                    AssessedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    LastSeen DATETIME
+                )";
+
+            // Anomalies Table
+            var anomaliesTable = @"
+                CREATE TABLE IF NOT EXISTS Anomalies (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    DetectedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    Type TEXT NOT NULL,
+                    Description TEXT NOT NULL,
+                    IPAddress TEXT,
+                    SeverityScore REAL DEFAULT 0,
+                    IsResolved INTEGER DEFAULT 0,
+                    ResolvedAt DATETIME,
+                    Resolution TEXT
+                )";
+
+            // Scan Statistics Table
+            var scanStatisticsTable = @"
+                CREATE TABLE IF NOT EXISTS ScanStatistics (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Date DATETIME NOT NULL,
+                    TotalScans INTEGER DEFAULT 0,
+                    TotalIPsScanned INTEGER DEFAULT 0,
+                    TotalHostsFound INTEGER DEFAULT 0,
+                    TotalMinersDetected INTEGER DEFAULT 0,
+                    TotalFakeIPs INTEGER DEFAULT 0,
+                    AverageScanTime REAL DEFAULT 0,
+                    SuccessRate REAL DEFAULT 0,
+                    Province TEXT,
+                    City TEXT,
+                    ISP TEXT
+                )";
+
             ExecuteNonQuery(connection, scanResultsTable);
             ExecuteNonQuery(connection, ipResultsTable);
             ExecuteNonQuery(connection, fakeIPTable);
@@ -264,6 +459,18 @@ namespace BlockchainNetworkAnalyzer.Core
             ExecuteNonQuery(connection, internetConnectionTable);
             ExecuteNonQuery(connection, subscriberInfoTable);
             ExecuteNonQuery(connection, mapMarkersTable);
+            ExecuteNonQuery(connection, detectionRulesTable);
+            ExecuteNonQuery(connection, ruleConditionsTable);
+            ExecuteNonQuery(connection, ruleActionsTable);
+            ExecuteNonQuery(connection, minerSignaturesTable);
+            ExecuteNonQuery(connection, detectionResultsTable);
+            ExecuteNonQuery(connection, scheduledScansTable);
+            ExecuteNonQuery(connection, scheduleExecutionsTable);
+            ExecuteNonQuery(connection, scanComparisonsTable);
+            ExecuteNonQuery(connection, hostDifferencesTable);
+            ExecuteNonQuery(connection, riskAssessmentsTable);
+            ExecuteNonQuery(connection, anomaliesTable);
+            ExecuteNonQuery(connection, scanStatisticsTable);
 
             // Create indexes
             ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_IPResults_ScanResultId ON IPResults(ScanResultId)");
@@ -282,6 +489,22 @@ namespace BlockchainNetworkAnalyzer.Core
             ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_SubscriberInfo_Province ON SubscriberInfo(Province)");
             ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_MapMarkers_IPAddress ON MapMarkers(IPAddress)");
             ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_MapMarkers_LatLng ON MapMarkers(Latitude, Longitude)");
+            
+            // New indexes for expanded system
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_DetectionRules_Type ON DetectionRules(Type)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_DetectionRules_IsActive ON DetectionRules(IsActive)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_RuleConditions_RuleId ON RuleConditions(RuleId)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_DetectionResults_ScanResultId ON DetectionResults(ScanResultId)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_DetectionResults_IPAddress ON DetectionResults(IPAddress)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_DetectionResults_DetectedAt ON DetectionResults(DetectedAt)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_ScheduledScans_IsEnabled ON ScheduledScans(IsEnabled)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_ScheduledScans_NextRun ON ScheduledScans(NextRun)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_ScheduleExecutions_ScheduledScanId ON ScheduleExecutions(ScheduledScanId)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_RiskAssessments_Level ON RiskAssessments(Level)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_RiskAssessments_RiskScore ON RiskAssessments(RiskScore)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_Anomalies_Type ON Anomalies(Type)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_Anomalies_IsResolved ON Anomalies(IsResolved)");
+            ExecuteNonQuery(connection, "CREATE INDEX IF NOT EXISTS idx_ScanStatistics_Date ON ScanStatistics(Date)");
         }
 
         private static void ExecuteNonQuery(SQLiteConnection connection, string sql)
