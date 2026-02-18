@@ -1,0 +1,158 @@
+{
+  "_comment": "Extended configuration for Iranian Network Miner Detection System",
+  "version": "2.0.0",
+  
+  "scan": {
+    "timeout": 3,
+    "concurrency": 50,
+    "ping_timeout": 1.0,
+    "tcp_timeout": 3.0,
+    "max_retries": 2,
+    "retry_delay": 1.0,
+    "enable_ping": true,
+    "enable_banner_grab": true,
+    "banner_timeout": 5.0,
+    "rate_limit_enabled": true,
+    "rate_limit_requests_per_second": 100,
+    "polite_scanning": true,
+    "delay_between_scans_ms": 50
+  },
+  
+  "geolocation": {
+    "primary_provider": "ip-api.com",
+    "fallback_provider": "ipinfo.io",
+    "ipinfo_token": "",
+    "rate_limit_per_minute": 45,
+    "cache_enabled": true,
+    "cache_ttl_hours": 24,
+    "request_timeout": 10,
+    "enable_iranian_geography": true,
+    "default_country_code": "IR"
+  },
+  
+  "iranian_coverage": {
+    "enabled": true,
+    "all_provinces": true,
+    "default_province": "Tehran",
+    "province_filter_enabled": false,
+    "city_filter_enabled": false
+  },
+  
+  "isp_management": {
+    "enabled": true,
+    "auto_detect_isp": true,
+    "use_iranian_isp_database": true,
+    "calculate_risk_scores": true,
+    "risk_score_update_interval_hours": 24
+  },
+  
+  "vpn_detection": {
+    "enabled": true,
+    "check_external_services": true,
+    "cache_results": true,
+    "cache_ttl_hours": 48,
+    "detect_proxy": true,
+    "detect_tor": true,
+    "detect_hosting": true,
+    "detect_mobile": true
+  },
+  
+  "detection_rules": {
+    "enabled": true,
+    "config_file": "config/detection_rules.yaml",
+    "auto_reload": false,
+    "confidence_threshold": 0.5,
+    "enable_rule_engine": true,
+    "enable_signatures": true
+  },
+  
+  "scheduler": {
+    "enabled": true,
+    "database_path": "data/scheduler.db",
+    "max_concurrent_jobs": 5,
+    "job_coalesce": true,
+    "misfire_grace_time_seconds": 3600,
+    "default_timezone": "UTC"
+  },
+  
+  "miner_ports": {
+    "stratum_ports": [3333, 4444, 4028, 7777, 14433, 14444],
+    "bitcoin_ports": [8332, 8333],
+    "ethereum_ports": [8545, 30303],
+    "monero_ports": [3333, 8080, 8081],
+    "litecoin_ports": [9332, 9333],
+    "dogecoin_ports": [9332, 22555],
+    "generic_ports": [8080, 8081],
+    "custom_ports": []
+  },
+  
+  "database": {
+    "db_path": "data/iranian_miner_detector.db",
+    "connection_timeout": 30,
+    "max_connections": 10,
+    "enable_backup": true,
+    "backup_interval_hours": 24,
+    "backup_retention_days": 7
+  },
+  
+  "reporting": {
+    "reports_dir": "reports",
+    "auto_export": true,
+    "export_formats": ["json", "csv", "html", "pdf", "excel"],
+    "include_map": true,
+    "timestamp_format": "%Y%m%d_%H%M%S",
+    "include_charts": true,
+    "chart_types": ["matplotlib", "plotly"],
+    "chart_output_dir": "reports/charts"
+  },
+  
+  "analytics": {
+    "enabled": true,
+    "cache_ttl_minutes": 5,
+    "trend_analysis_days": 30,
+    "generate_charts": true,
+    "chart_resolution_dpi": 150
+  },
+  
+  "notification": {
+    "enabled": false,
+    "email_enabled": false,
+    "smtp_server": "",
+    "smtp_port": 587,
+    "smtp_username": "",
+    "smtp_password": "",
+    "email_from": "",
+    "email_to": [],
+    "webhook_enabled": false,
+    "webhook_url": "",
+    "webhook_timeout": 10
+  },
+  
+  "logging": {
+    "level": "INFO",
+    "file": "data/iranian_miner_detector.log",
+    "max_size_mb": 10,
+    "backup_count": 5,
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  },
+  
+  "ui": {
+    "theme": "dark",
+    "language": "en",
+    "enable_province_selector": true,
+    "enable_city_selector": true,
+    "enable_dashboard": true,
+    "dashboard_refresh_interval_seconds": 60,
+    "show_map_by_default": true,
+    "enable_realtime_updates": true
+  },
+  
+  "security": {
+    "require_admin_privileges": false,
+    "enable_audit_log": true,
+    "audit_log_file": "data/audit.log",
+    "max_scan_cidr_size": 16,
+    "warn_large_scans": true,
+    "confirmation_required": true
+  }
+}
