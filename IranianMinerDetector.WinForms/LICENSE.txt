@@ -1,0 +1,73 @@
+IRANIAN MINER DETECTOR - END USER LICENSE AGREEMENT
+
+Copyright (c) 2024 Iranian Network Security
+
+IMPORTANT: PLEASE READ THIS LICENSE AGREEMENT CAREFULLY. BY USING THIS SOFTWARE, YOU AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE.
+
+1. LICENSE GRANT
+This License Agreement grants you the following rights:
+
+a. Installation and Use: You may install and use the Iranian Miner Detector software on any number of computers running Windows 10 or later that you own or control.
+
+b. Distribution: You may distribute copies of the software to others, provided that you include all original files, including this license agreement.
+
+2. RESTRICTIONS
+
+You may NOT:
+a. Reverse engineer, decompile, or disassemble the software.
+b. Modify or create derivative works of the software.
+c. Remove any proprietary notices or labels from the software.
+d. Use the software for illegal or unauthorized purposes.
+
+3. ACCEPTABLE USE
+
+This software is designed for authorized network security auditing only. You agree to:
+
+a. Use the software only on networks you own or have explicit written permission to scan.
+b. Obtain proper authorization before conducting any network scanning.
+c. Respect all applicable privacy and data protection laws.
+d. Use the results only for legitimate security purposes.
+e. Not use the software for unauthorized access, surveillance, or any illegal activities.
+
+4. LIABILITY DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+5. NO WARRANTY ON ACCURACY
+
+The software scans networks and detects potential mining operations based on heuristics and protocol analysis. The results are NOT guaranteed to be 100% accurate and should be verified through other means before taking any action. The developers are not responsible for any false positives, false negatives, or consequences of actions taken based on scan results.
+
+6. INTELLECTUAL PROPERTY
+
+All rights, title, and interest in and to the software, including all intellectual property rights, are and shall remain the exclusive property of Iranian Network Security.
+
+7. PRIVACY AND DATA COLLECTION
+
+The software stores scan results locally on your computer. No data is transmitted to external servers except for:
+a. Optional geolocation API calls to determine IP locations (configurable)
+b. Map tiles from OpenStreetMap for visualization
+
+You are responsible for complying with all applicable privacy laws when scanning networks that may contain personal data.
+
+8. EXPORT COMPLIANCE
+
+You agree to comply with all applicable export control laws and regulations. The software may not be exported, re-exported, transferred, or released to prohibited destinations or individuals.
+
+9. TERMINATION
+
+This license is effective until terminated. Your rights under this license will terminate automatically without notice from Iranian Network Security if you fail to comply with any term of this license.
+
+10. GOVERNING LAW
+
+This agreement shall be governed by and construed in accordance with the laws of the Islamic Republic of Iran. Any disputes arising under this agreement shall be resolved in the courts of Tehran.
+
+11. ACKNOWLEDGMENT
+
+By installing and using this software, you acknowledge that you have read this license agreement, understand it, and agree to be bound by its terms and conditions. You also acknowledge that this software is intended for authorized network security auditing only and that you are responsible for obtaining all necessary permissions before conducting any network scanning.
+
+For support and inquiries, please contact:
+Email: support@iranian-network-security.local
+Website: https://github.com/iranian-network-security
+
+IRANIAN MINER DETECTOR v1.0.0
+© 2024 Iranian Network Security. All rights reserved.

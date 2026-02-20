@@ -686,33 +686,18 @@ namespace IranianMinerDetector.WinForms.Forms
 
         private void ShowSettings()
         {
-            MessageBox.Show(
-                "Settings panel will be implemented in future versions.\n\n" +
-                "Current settings stored in:\n" +
-                _db.GetDatabasePath(),
-                "Settings",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using var settingsForm = new SettingsForm();
+            var result = settingsForm.ShowDialog(this);
+            if (result == DialogResult.OK)
+            {
+                AddLogEntry("Settings updated successfully.", Color.Green);
+            }
         }
 
         private void ShowAbout()
         {
-            MessageBox.Show(
-                "Iranian Miner Detector - WinForms Edition\n" +
-                "Version 1.0.0\n\n" +
-                "Standalone network scanning and miner detection tool\n" +
-                "for Iranian networks.\n\n" +
-                "Features:\n" +
-                "• Network scanning with configurable ports\n" +
-                "• Mining operation detection\n" +
-                "• Geolocation support\n" +
-                "• Interactive maps\n" +
-                "• PDF/Excel/CSV reports\n" +
-                "• SQLite database storage\n\n" +
-                "© 2024 Iranian Network Security",
-                "About",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            using var aboutForm = new AboutForm();
+            aboutForm.ShowDialog(this);
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
