@@ -370,5 +370,50 @@ namespace IranianMinerDetector.WinForms.Data
         }
 
         public string GetDatabasePath() => _databasePath;
+
+        public void ClearGeolocationCache()
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM GeolocationCache";
+            command.ExecuteNonQuery();
+        }
+
+        public void ClearAllData()
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            connection.Open();
+
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM HostRecords";
+                    command.ExecuteNonQuery();
+                }
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM ScanRecords";
+                    command.ExecuteNonQuery();
+                }
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM GeolocationCache";
+                    command.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
     }
 }
